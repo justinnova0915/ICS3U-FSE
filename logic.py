@@ -9,5 +9,3 @@ def merge_row(row: list[int]) -> list[int]:
     newRow  = [i for i in row if i != 0] # Remove trailing zeros
     newRow += [0 for _ in range(len(row) - len(newRow))] # Add filler zeros
     return newRow
-
-print(merge_row([2, 0, 2, 2]))
