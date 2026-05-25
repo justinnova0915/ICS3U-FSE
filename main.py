@@ -2,8 +2,6 @@
 # FSE May - July 2026
 
 ########## ========== IMPORTS =========== ##########
-import json
-
 import pygame
 
 from   constants        import *
@@ -11,9 +9,6 @@ from   game.board       import Board
 from   game.state       import State
 from   ui.renderer      import Renderer
 import ui.input_handler as     Input
-
-
-import game.logic       as logic
 
 ########## ========= INITIALIZE ========= ##########
 pygame.init()
@@ -81,12 +76,10 @@ while running:
         if handle_newGame(action):
             state = State.GAME
 
-    if dt_accum >= TIMER:
-        dt_accum %= TIMER
-
+    # if dt_accum >= TIMER:
+    #     dt_accum %= TIMER
 
     ########## ========== DRAW ========== ##########
-    screen.fill(BACKGROUND_COLOUR)
     renderer.draw(board, state)
 
     ########## ======== DISPLAY ========= ##########

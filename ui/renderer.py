@@ -5,15 +5,15 @@ from game.board import Board
 from game.state import State
 
 class Renderer:
-    def __init__(self, dest: pygame.Surface, rows: int, cols: int) -> None:
-        self.surface   = dest
+    def __init__(self, screen: pygame.Surface, rows: int, cols: int) -> None:
+        self.screen    = screen
         self.uiSurf    = pygame.Surface((800, 250), pygame.SRCALPHA)
         self.boardSurf = pygame.Surface(self._get_boardSize(rows, cols), pygame.SRCALPHA)
 
         self.fontSurfaces = {
             key: pygame.font.Font(
                 FONT_FILENAME,
-                TILE_FONT[key]
+                TILE_FONT_SIZE[key]
             ).render(
                 str(key),
                 True,
@@ -23,19 +23,19 @@ class Renderer:
             )
             for key in TILE_KEYS if key != "default"
         }
-        self.fontDefault  = pygame.font.Font(FONT_FILENAME, TILE_FONT["default"])
+        self.fontDefault  = pygame.font.Font(FONT_FILENAME, TILE_FONT_SIZE["default"])
 
     def draw(self, board: Board, state: State) -> None:
         # Clear background
-        self.surface.fill(BACKGROUND_COLOUR)
+        self.screen.fill(BACKGROUND_COLOUR)
         self.boardSurf.fill((0, 0, 0, 0))
         self.uiSurf.fill((0, 0, 0, 0))
         # Render surfaces
         self._render_board(board)
         self._render_ui(board.score)
         # Blit surfaces
-        self.surface.blit(self.boardSurf, self._get_boardPos())
-        self.surface.blit(self.uiSurf, self._get_uiPos())
+        self.screen.blit(self.boardSurf, self._get_boardPos())
+        self.screen.blit(self.uiSurf, self._get_uiPos())
 
     def _get_textSurface(self, value: int) -> pygame.Surface:
         if value not in self.fontSurfaces:
@@ -52,13 +52,13 @@ class Renderer:
     def _get_boardPos(self) -> Coord:
         uiHeight = self.uiSurf.get_height()
         return Coord(
-            (self.surface.get_width()  - self.boardSurf.get_width())  // 2,
-            uiHeight + (self.surface.get_height() - uiHeight - self.boardSurf.get_height()) // 2
+            (self.screen.get_width()  - self.boardSurf.get_width())  // 2,
+            uiHeight + (self.screen.get_height() - uiHeight - self.boardSurf.get_height()) // 2
         )
 
     def _get_uiPos(self) -> Coord:
         return Coord(
-            (self.surface.get_width() - self.uiSurf.get_width()) // 2,
+            (self.screen.get_width() - self.uiSurf.get_width()) // 2,
             0
         )
 
@@ -86,8 +86,9 @@ class Renderer:
                 textRect = textSurf.get_rect()
                 textRect.center = rect.center
                 self.boardSurf.blit(textSurf, textRect)
+                
 
     def _render_ui(self, score: int) -> None:
         # Scores
-        textSurf = self.fontDefault.render(str(score), True, TILE_FONT["default"])
+        textSurf = self.fontDefault.render(str(score), True, TILE_FONT_SIZE["default"])
         self.uiSurf.blit(textSurf, (100, 0))

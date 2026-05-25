@@ -15,8 +15,7 @@ def merge_row(row: list[int]) -> tuple[list[int], int]:
             points += mergedVal # Update score
     # Remove middle 0s, add 0s back to fill
     result  = compress_row(noZero)
-    padding = len(row) - len(result)
-    result += [0] * padding
+    result += [0] * (len(row) - len(result))
 
     return result, points
 

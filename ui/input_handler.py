@@ -9,8 +9,6 @@ DIRECTION_KEYS = {
     pygame.K_d      : "right",
     pygame.K_w      : "up",
     pygame.K_s      : "down",
-    pygame.K_z      : "left",
-    pygame.K_x      : "right",
 }
 
 def get_action(events: list) -> str | None:
