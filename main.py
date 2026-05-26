@@ -2,6 +2,8 @@
 # FSE May - July 2026
 
 ########## ========== IMPORTS =========== ##########
+import json
+
 import pygame
 
 from   constants        import *
@@ -76,10 +78,12 @@ while running:
         if handle_newGame(action):
             state = State.GAME
 
-    # if dt_accum >= TIMER:
-    #     dt_accum %= TIMER
+    if dt_accum >= TIMER:
+        dt_accum %= TIMER
+
 
     ########## ========== DRAW ========== ##########
+    screen.fill(BACKGROUND_COLOUR)
     renderer.draw(board, state)
 
     ########## ======== DISPLAY ========= ##########
