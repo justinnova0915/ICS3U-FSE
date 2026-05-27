@@ -61,9 +61,9 @@ while running:
     if state == State.GAME:
         if action in MOVE_ACTIONS:
             board.move(action)
-            if board.win:
+            if board.hasWon():
                 state = State.WIN
-            if board.lose:
+            if not board.hasLegalMove():
                 state = State.LOSE
 
     elif state == State.WIN:
