@@ -86,8 +86,9 @@ while running:
         if handle_newGame(action):
             state = State.GAME
 
-    if dt_accum >= TIMER:
-        dt_accum %= TIMER
+    if dt_accum >= DT_STEP:
+        dt_accum -= DT_STEP
+        ### ...(DT_STEP)
 
 
     ########## ========== DRAW ========== ##########

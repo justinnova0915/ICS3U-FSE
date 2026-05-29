@@ -1,5 +1,6 @@
-from random import choice, random
+from   random import choice, random
 import copy
+
 from constants import *
 
 from utils.tiles import TileMove
