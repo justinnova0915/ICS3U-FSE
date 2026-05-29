@@ -14,7 +14,7 @@ Coord    = namedtuple("Coord",      ['x', 'y'])
 Size     = namedtuple("Size",       ['w', 'h'])
     
 
-def easeOut_back(t: float) -> float:
+def animation_timeMap(t: float) -> float: # Ease out back
     c1 = 0.5
     c3 = c1 + 1.0
     return 1.0 + c3 * ((t - 1.0) ** 3) + c1 * ((t - 1.0) ** 2)
@@ -76,3 +76,5 @@ TILE_TEXT_COLOURS = {
 
 CELL_SIZE = Size (125, 125)
 CELL_PAD  = Size (15,  15 )
+
+ANIM_DURATION = 1.0
