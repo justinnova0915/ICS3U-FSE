@@ -10,6 +10,7 @@ from   constants        import *
 from   game.board       import Board
 from   game.state       import State
 from   ui.renderer      import Renderer
+from   ui.animator      import Animator
 import ui.input_handler as     Input
 
 ########## ========= INITIALIZE ========= ##########
@@ -30,6 +31,7 @@ TIMER = 2
 
 ########## ========== MODULES =========== ##########
 board    = Board()
+animator = Animator()
 renderer = Renderer(screen, board.rows, board.cols)
 
 ########## ========= GAME LOOP ========== ##########
@@ -41,6 +43,12 @@ def handle_newGame(action: str | None) -> bool:
         board.reset()
         return True
     return False
+
+def move(action: str):
+    board.move(action)
+    moved = board.get_moved()
+    animator.load_moved(moved)
+    
 
 running = True
 while running:

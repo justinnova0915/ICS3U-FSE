@@ -1,8 +1,10 @@
 import pygame
 
 from constants  import *
+from ui.animator import Animator
 from game.board import Board
 from game.state import State
+from utils.tiles import TileDraw
 
 class Renderer:
     def __init__(self, screen: pygame.Surface, rows: int, cols: int) -> None:
@@ -68,25 +70,29 @@ class Renderer:
         y = boardPos.y + (CELL_PAD.h + (CELL_SIZE.h + CELL_PAD.h) * row)
         return Coord(x, y)
     
-    def _render_board(self, board: Board) -> None:
+    def _render_base(self, board: Board) -> None:
         pygame.draw.rect(self.boardSurf, BOARD_COLOUR, self.boardSurf.get_rect(), border_radius=BOARD_ROUND)
         # Individual tiles
         for r, c in [(r, c) for r in range(board.rows) for c in range(board.cols)]:
             rect = pygame.Rect(c * (CELL_SIZE.w + CELL_PAD.w) + CELL_PAD.w, r * (CELL_SIZE.h + CELL_PAD.h) + CELL_PAD.h, *CELL_SIZE)
             # Null background
             pygame.draw.rect(self.boardSurf, BOARD_TILE_COLOUR, rect, border_radius=BOARD_TILE_ROUND)
-            # Draw tile
-            tileVal = board.get_tile(r, c)
-            if tileVal != 0:
-                # Background
-                colour = TILE_COLOURS.get(tileVal, TILE_COLOURS["default"])
-                pygame.draw.rect(self.boardSurf, colour, rect, border_radius=BOARD_TILE_ROUND)
-                # Text
-                textSurf = self._get_textSurface(tileVal)
-                textRect = textSurf.get_rect()
-                textRect.center = rect.center
-                self.boardSurf.blit(textSurf, textRect)
-                
+    
+    def _render_tile(self, tile: TileDraw):
+        if tile.value != 0:
+            rect = pygame.Rect(tile.x, tile.y, *CELL_SIZE)
+            # Background
+            colour = TILE_COLOURS.get(tile.value, TILE_COLOURS["default"])
+            pygame.draw.rect(self.boardSurf, colour, rect, border_radius=BOARD_TILE_ROUND)
+            # Text
+            textSurf = self._get_textSurface(tile.value)
+            textRect = textSurf.get_rect()
+            textRect.center = rect.center
+            self.boardSurf.blit(textSurf, textRect)
+
+    def _render_tiles(self, tiles: list[TileDraw]):
+        for tile in tiles:
+            self._render_tile(tile)                
 
     def _render_ui(self, score: int) -> None:
         # Scores

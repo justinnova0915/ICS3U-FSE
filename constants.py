@@ -1,4 +1,5 @@
 from pathlib     import Path
+from dataclasses import dataclass
 from collections import namedtuple
 
 ROOT_PATH = str(Path(__file__).parent)
@@ -11,6 +12,7 @@ def pathJoin(root: str | Path, path: str, *args) -> str:
 
 Coord    = namedtuple("Coord",      ['x', 'y'])
 Size     = namedtuple("Size",       ['w', 'h'])
+    
 
 def easeOut_back(t: float) -> float:
     c1 = 0.5

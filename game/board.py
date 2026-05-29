@@ -2,6 +2,8 @@ from random import choice, random
 import copy
 from constants import *
 
+from utils.tiles import TileMove
+
 class Board:
     '''
     Main class for the game board
@@ -9,6 +11,7 @@ class Board:
     def __init__(self, rows: int = 4, cols: int = 4, tileSpawn: int = 1) -> None:
         self.rows      : int
         self.cols      : int
+        self.moved     : list[tuple]
         self.board     : list[list[int]]
         '''dict of all the directions with their respective functions'''
         self.move_func = {
@@ -133,10 +136,16 @@ class Board:
         self._reverse()
         self._transpose()
 
-    def move(self, direction: str) -> bool: # Did a move happen?
+    def move(self, direction: str) -> list[dict]: # Did a move happen?
         '''Exposed enpoint for moving provided a direction'''
-        oldBoard = self.board
+        oldBoard = copy.deepcopy(self.board)
         self.move_func[direction]()
+
+        for r in self.rows:
+            for c in self.cols:
+                if self.board[r][c] != oldBoard:
+                    self.moved.append((r, c))
+
         # Don't update if no move
         if self.board == oldBoard:
             return False
@@ -172,3 +181,11 @@ class Board:
             for r in range(self.rows)
             for c in range(self.cols)
         )
+    
+    def _gridToPixel(self, row : int, col : int) -> Coord:
+        x = CELL_PAD.w + (CELL_SIZE.w + CELL_PAD.w) * col
+        y = CELL_PAD.h + (CELL_SIZE.h + CELL_PAD.h) * row
+        return Coord(x, y)
+    
+    def get_moved(self) -> list[tuple]:
+        return self.moved
