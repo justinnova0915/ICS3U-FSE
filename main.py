@@ -12,7 +12,6 @@ from   game.state       import State
 from   ui.renderer      import Renderer
 from   ui.animator      import Animator
 import ui.input_handler as     Input
-from utils.tiles import TileDraw, TileMove
 
 ########## ========= INITIALIZE ========= ##########
 pygame.init()
@@ -39,12 +38,6 @@ renderer = Renderer(screen, board.rows, board.cols)
 
 state = State.GAME
 
-def handle_newGame(action: str | None) -> bool:
-    if action == "new_game":
-        board.reset()
-        return True
-    return False
-
 running = True
 while running:
 
@@ -67,32 +60,32 @@ while running:
         # Movement
         if action in MOVE_ACTIONS:
             board.move(action)
-            animator.load_queue(board.get_moved())
             # Win | Lose gamestate
             if board.hasWon():
                 state = State.WIN
             if not board.hasLegalMove():
                 state = State.LOSE
+        
+        if action == "newGame":
+            board.reset()
 
     elif state == State.WIN:
-        if handle_newGame(action):
+        if action == "new_game":
+            board.reset()
             state = State.GAME
 
     elif state == State.LOSE:
-        if handle_newGame(action):
+        if action == "new_game":
+            board.reset()
             state = State.GAME
 
     elif state == State.MENU:
-        if handle_newGame(action):
+        if action == "new_game":
+            board.reset()
             state = State.GAME
-
-    animator.update(dt)
-    tilePositions = animator.get_active()
-
     
     ########## ========== DRAW ========== ##########
     screen.fill(BACKGROUND_COLOUR)
-    renderer._render_tiles(tilePositions)
     renderer.draw(board, state)
 
     ########## ======== DISPLAY ========= ##########

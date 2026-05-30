@@ -1,7 +1,7 @@
 from    random  import choice, random
 import  copy
 
-from    constants   import *
+from    constants import *
 from    utils.tiles import Tile
 
 class Board:
@@ -27,15 +27,6 @@ class Board:
         self.reset(rows, cols, tileSpawn)
 
 
-    ########## ============ MISC ============ ##########
-    
-    def _gridToPixel(self, rowIndex: int, colIndex: int) -> Coord:
-        ''' Converts a grid coordinate to a pixel coordinate '''
-        x = CELL_PAD.w + (CELL_SIZE.w + CELL_PAD.w) * col
-        y = CELL_PAD.h + (CELL_SIZE.h + CELL_PAD.h) * rowIndex
-        return Coord(x, y) 
-
-
     ########## ===== MERGING & MOVEMENT ===== ##########
 
     def _compress_row(self, rowIndex: int) -> None:
@@ -48,33 +39,33 @@ class Board:
         Checks for adjacent pairs of the same value in the row, then merges them  
         Note: this method merges leftwards
         '''
-        row = self.board[rowIndex]
+
         # Record positions
-        for tile in row:
+        for tile in self.board[rowIndex]:
             tile.prev = tile.curr
         # Compress to remove null tiles
         self._compress_row(rowIndex)
         # Merge for each valid pair
         col = 0
-        while col <= len(row) - 1:
-            currTile = row[col]
-            nextTile = row[col+1]
-            if currTile.value == nextTile.value:
-                temp_mergedVal  = currTile * 2
+        while col < len(self.board[rowIndex]) - 1:
+            currTile = self.board[rowIndex][col]
+            nextTile = self.board[rowIndex][col+1]
+            if currTile.value == nextTile.value: # Can merge
+                temp_mergedVal  = currTile.value * 2
                 # Update the primary tile
                 currTile.value  = temp_mergedVal
                 currTile.curr   = (rowIndex, col)
                 # Remove the secondary tile
-                nextTile.value  = 0 # No pos update since will be removed
+                nextTile.value  = 0 # Now redundant; will remove
                 # Update score
                 self.score     += temp_mergedVal
-
-                col += 2 # Iterate over atrophied secondary tile
+                # Iterate
+                col += 2 # Skip over atrophied secondary tile
             else:
                 col += 1 # Iterate to next
         # Remove extra 0s, add 0s back to fill
         self._compress_row(rowIndex)
-        row += [Tile()] * (self.cols - len(row))
+        self.board[rowIndex] += [Tile(curr=(rowIndex, c)) for c in range(len(self.board[rowIndex]), self.cols)]
 
     def _merge_board(self):
         ''' Wrapper that performs _merge_row on the whole board '''
@@ -123,6 +114,7 @@ class Board:
             return False
         
         # Add tile
+        print(self.tileSpawn)
         self._spawn_tile(self.tileSpawn)
 
         return True
@@ -134,21 +126,19 @@ class Board:
         ''' Gets the tile value at a specific index '''
         return self.board[row][col]
 
-    def _get_empty_cells(self) -> list[tuple[int, int]]:
+    def _get_emptyCells(self) -> list[tuple[int, int]]:
         ''' Returns all the cells that has no numbers in it '''
-        return [(r, c) for r in range(self.rows) for c in range(self.cols) if self.board[r][c] is None]
+        return [(r, c) for r in range(self.rows) for c in range(self.cols) if self.board[r][c].value == 0]
 
     def _set_tile(self, row: int, col: int, val: int) -> None:
         ''' Sets the values of a tile given the index '''
         self.board[row][col].value = val
 
     def _spawn_tile(self, num: int = 1) -> None:
-        ''' Spawns new tiles IF the spot is empty '''
-        empty = self._get_empty_cells()
-        if not empty: 
-            return
-        
+        ''' Spawns new tiles at random empty spaces '''
+        empty = self._get_emptyCells()
         for _ in range(num):
+            if not empty: return # Break if no empty
             randomTile = choice(empty)
             val = 4 if random() < 0.1 else 2
             self._set_tile(*randomTile, val)
@@ -188,7 +178,7 @@ class Board:
         ''' Reverts the game state to inital state and clears the board '''
         self.rows      = rows
         self.cols      = cols
-        self.board     = [[Tile(0, (r, c), None, None, False) for c in range(self.cols)] for r in range(self.rows)]
+        self.board     = [[Tile(curr=(r, c)) for c in range(self.cols)] for r in range(self.rows)]
         self.tileSpawn = tileSpawn
         self.score     = 0
         # Add starting tiles
@@ -201,7 +191,7 @@ class Board:
         ''' Debug function for printing '''
         buffer = []
         for row in self.board:
-            buffer.append(f"{" ".join(map(str, row))}")
+            buffer.append(f"{" ".join(map(str, [tile.value for tile in row]))}")
         rowLen = len(buffer[0])
         print('┌', '─' * (rowLen + 2), '┐', sep='')
         for row in buffer: print(f"│ {row} │")

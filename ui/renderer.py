@@ -1,10 +1,9 @@
 import pygame
 
-from constants  import *
-from ui.animator import Animator
-from game.board import Board
-from game.state import State
-from utils.tiles import TileDraw
+from    constants       import *
+from    game.board      import Board
+from    game.state      import State
+from    utils.tiles     import Tile
 
 class Renderer:
     def __init__(self, screen: pygame.Surface, rows: int, cols: int) -> None:
@@ -77,7 +76,7 @@ class Renderer:
             # Null background
             pygame.draw.rect(self.boardSurf, BOARD_TILE_COLOUR, rect, border_radius=BOARD_TILE_ROUND)
     
-    def _render_tile(self, tile: TileDraw):
+    def _render_tile(self, tile: Tile):
         if tile.value != 0:
             rect = pygame.Rect(tile.x, tile.y, *CELL_SIZE)
             # Background
@@ -89,7 +88,7 @@ class Renderer:
             textRect.center = rect.center
             self.boardSurf.blit(textSurf, textRect)
 
-    def _render_tiles(self, tiles: list[TileDraw]):
+    def _render_tiles(self, tiles: list[Tile]):
         for tile in tiles:
             self._render_tile(tile)
 
