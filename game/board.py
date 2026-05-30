@@ -48,22 +48,33 @@ class Board:
         Checks for adjacent pairs of the same value in the row, then merges them  
         Note: this method merges leftwards
         '''
-        points = 0
+        row = self.board[rowIndex]
+        # Record positions
+        for tile in row:
+            tile.prev = tile.curr
+        # Compress to remove null tiles
         self._compress_row(rowIndex)
         # Merge for each valid pair
-        row = self.board[rowIndex]
-        for i in range(len(row) - 1):
-            currTile = row[i]
-            nextTile = row[i+1]
+        col = 0
+        while col <= len(row) - 1:
+            currTile = row[col]
+            nextTile = row[col+1]
             if currTile.value == nextTile.value:
                 temp_mergedVal  = currTile * 2
-                currTile  = temp_mergedVal # Update the primary tile
-                nextTile  = 0 # Remove the secondary tile
-                points   += temp_mergedVal # Update score
-        # Remove middle 0s, add 0s back to fill
+                # Update the primary tile
+                currTile.value  = temp_mergedVal
+                currTile.curr   = (rowIndex, col)
+                # Remove the secondary tile
+                nextTile.value  = 0 # No pos update since will be removed
+                # Update score
+                self.score     += temp_mergedVal
+
+                col += 2 # Iterate over atrophied secondary tile
+            else:
+                col += 1 # Iterate to next
+        # Remove extra 0s, add 0s back to fill
         self._compress_row(rowIndex)
-        row += [0] * (self.cols - len(row))
-        self.score += points # Update total score
+        row += [Tile()] * (self.cols - len(row))
 
     def _merge_board(self):
         ''' Wrapper that performs _merge_row on the whole board '''
