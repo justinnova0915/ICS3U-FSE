@@ -6,14 +6,6 @@ from game import board
 from utils import vector
 from constants import *
 
-
-@dataclass
-class Tween:
-    value:  int
-    sPos:   tuple[float, float]
-    ePos:   tuple[float, float]
-    merged: bool
-
 class Animator:
     def __init__(self):
         self.elapsed = 0

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 @dataclass
 class Tile():
     value:  int
-    cur:    tuple[int, int]
-    next:   tuple[int, int]
-    pos:    tuple[float, float]
+    curr:   tuple[int, int]
+    prev:   tuple[int, int]     | None
+    pos:    tuple[float, float] | None
     merged: bool

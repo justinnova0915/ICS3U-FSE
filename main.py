@@ -47,23 +47,28 @@ def handle_newGame(action: str | None) -> bool:
 
 running = True
 while running:
+
     ########## ========== TIME ========== ##########
     dt = min(clock.tick(MAX_FPS) / 1000, DT_MAX)
 
     ########## ========= EVENTS ========= ##########
     events = pygame.event.get()
 
+    # Pygame Events
     for event in events:
         if event.type == pygame.QUIT:
             running = False
-
+    
+    # Input handling
     action = Input.get_action(events)
     
     ########## ========= UPDATE ========= ##########
     if state == State.GAME:
+        # Movement
         if action in MOVE_ACTIONS:
             board.move(action)
             animator.load_queue(board.get_moved())
+            # Win | Lose gamestate
             if board.hasWon():
                 state = State.WIN
             if not board.hasLegalMove():
