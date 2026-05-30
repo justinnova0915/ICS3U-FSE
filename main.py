@@ -12,6 +12,7 @@ from   game.state       import State
 from   ui.renderer      import Renderer
 from   ui.animator      import Animator
 import ui.input_handler as     Input
+from utils.tiles import TileDraw, TileMove
 
 ########## ========= INITIALIZE ========= ##########
 pygame.init()
@@ -44,17 +45,10 @@ def handle_newGame(action: str | None) -> bool:
         return True
     return False
 
-def move(action: str):
-    board.move(action)
-    moved = board.get_moved()
-    animator.load_moved(moved)
-    
-
 running = True
 while running:
     ########## ========== TIME ========== ##########
     dt = min(clock.tick(MAX_FPS) / 1000, DT_MAX)
-    dt_accum += dt
 
     ########## ========= EVENTS ========= ##########
     events = pygame.event.get()
@@ -69,6 +63,7 @@ while running:
     if state == State.GAME:
         if action in MOVE_ACTIONS:
             board.move(action)
+            animator.load_queue(board.get_moved())
             if board.hasWon():
                 state = State.WIN
             if not board.hasLegalMove():
@@ -86,13 +81,13 @@ while running:
         if handle_newGame(action):
             state = State.GAME
 
-    if dt_accum >= DT_STEP:
-        dt_accum -= DT_STEP
-        ### ...(DT_STEP)
+    animator.update(dt)
+    tilePositions = animator.get_active()
 
-
+    
     ########## ========== DRAW ========== ##########
     screen.fill(BACKGROUND_COLOUR)
+    renderer._render_tiles(tilePositions)
     renderer.draw(board, state)
 
     ########## ======== DISPLAY ========= ##########

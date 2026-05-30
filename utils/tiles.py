@@ -1,14 +1,9 @@
 from dataclasses import dataclass
 
 @dataclass
-class TileMove():
-    value: int
-    start: tuple[int, int]
-    end: tuple[int, int]
+class Tile():
+    value:  int
+    cur:    tuple[int, int]
+    next:   tuple[int, int]
+    pos:    tuple[float, float]
     merged: bool
-    
-
-@dataclass
-class TileDraw():
-    value: int
-    pos: tuple[float, float]

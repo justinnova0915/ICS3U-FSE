@@ -5,7 +5,6 @@ from utils.tiles import TileDraw, TileMove
 from game import board
 from utils import vector
 from constants import *
-import renderer
 
 
 @dataclass
@@ -19,7 +18,7 @@ class Animator:
     def __init__(self):
         self.elapsed = 0
         self.progress = 0
-        self.active: list[Tween]
+        self.active = []
 
     def load_queue(self, moved: list[TileMove]):
         for tile in moved:
@@ -36,10 +35,10 @@ class Animator:
                 tile.merged
             ))
     
-    def _ease(progress: tuple[float, float]) -> float:
-        return tuple(
-            ...
-        )
+    def _ease(progress: float) -> float:
+        c1 = 1.1
+        c3 = c1 + 1.0
+        return 1.0 + c3 * ((progress - 1.0) ** 3) + c1 * ((progress - 1.0) ** 2)
 
     def _lerp(self, start: tuple[float, float], end: tuple[float, float], progess: float) -> float:
         eased_progress = self._ease(progess)
@@ -53,9 +52,15 @@ class Animator:
         progress = min(self.elapsed/ANIM_DURATION, 1.0)
         result = []
 
+        if progress == 1.0:
+            self.active = []
+        
         for tween in self.active:
             lerpedPos = self._lerp(tween.sPos, tween.ePos, progress)
             result.append(TileDraw(
                 tween.value,
                 lerpedPos
             ))
+
+    def get_active(self) -> list[TileMove]:
+        return self.active

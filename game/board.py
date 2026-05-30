@@ -1,9 +1,8 @@
-from   random import choice, random
+from random import choice, random
 import copy
-
 from constants import *
 
-from utils.tiles import TileMove
+from utils.tiles import Tile
 
 class Board:
     '''
@@ -16,8 +15,8 @@ class Board:
         '''
         self.rows      : int
         self.cols      : int
-        self.moved     : list[tuple]
-        self.board     : list[list[int]]
+        self.moved     : list[Tile]
+        self.board     : list[list[Tile]]
         ''' Dict of all the directions with their respective functions '''
         self.move_func = {
             "left"  : self._move_left,
@@ -29,24 +28,26 @@ class Board:
         self.score     : int
         self.reset(rows, cols, tileSpawn)
 
-    def get_tile(self, row: int, col: int) -> int:
+    def get_tile(self, row: int, col: int) -> Tile:
         ''' Gets the tile value at a specific index '''
         return self.board[row][col]
 
     def get_empty_cells(self) -> list[tuple[int, int]]:
         ''' Returns all the cells that has no numbers in it '''
-        return [(r, c) for r in range(self.rows) for c in range(self.cols) if self.board[r][c] == 0]
+        return [(r, c) for r in range(self.rows) for c in range(self.cols) if self.board[r][c]]
     
     def set_tile(self, row: int, col: int, val: int) -> None:
         ''' Sets the values of a tile given the index '''
-        self.board[row][col] = val
+        self.board[row][col].value = val
 
     def spawn_tile(self, num: int = 1) -> None:
-        ''' Spawns a new tile at the given index IF the spot is empty '''
+        ''' Spawns new tiles IF the spot is empty '''
         empty = self.get_empty_cells()
+        if not empty: 
+            return
+        
         for _ in range(num):
-            if not empty: return # Empty
-            pos = choice(empty)
+            randomTile = choice(empty)
             val = 4 if random() < 0.1 else 2
             self.set_tile(*pos, val)
             empty.remove(pos)
@@ -56,8 +57,8 @@ class Board:
         oldBoard = copy.deepcopy(self.board)
         self.move_func[direction]()
 
-        for r in self.rows:
-            for c in self.cols:
+        for r in range(self.rows):
+            for c in range(self.cols):
                 if self.board[r][c] != oldBoard:
                     self.moved.append((r, c))
 
@@ -109,7 +110,7 @@ class Board:
         ''' Reverts the game state to inital state and clears the board '''
         self.rows      = rows
         self.cols      = cols
-        self.board     = [[0 for _ in range(cols)] for _ in range(rows)]
+        self.board     = [[None]]
         self.tileSpawn = tileSpawn
         self.score     = 0
         # Add starting tiles

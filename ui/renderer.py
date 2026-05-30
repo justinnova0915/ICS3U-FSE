@@ -33,7 +33,7 @@ class Renderer:
         self.boardSurf.fill((0, 0, 0, 0))
         self.uiSurf.fill((0, 0, 0, 0))
         # Render surfaces
-        self._render_board(board)
+        self._render_base(board)
         self._render_ui(board.score)
         # Blit surfaces
         self.screen.blit(self.boardSurf, self._get_boardPos())
@@ -60,8 +60,7 @@ class Renderer:
 
     def _get_uiPos(self) -> Coord:
         return Coord(
-            (self.screen.get_width() - self.uiSurf.get_width()) // 2,
-            0
+            (self.screen.get_width() - self.uiSurf.get_width()) // 2, 0
         )
 
     def gridToPixel(self, board: Board, row : int, col : int) -> Coord:
@@ -92,7 +91,7 @@ class Renderer:
 
     def _render_tiles(self, tiles: list[TileDraw]):
         for tile in tiles:
-            self._render_tile(tile)                
+            self._render_tile(tile)
 
     def _render_ui(self, score: int) -> None:
         # Scores
