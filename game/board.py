@@ -5,7 +5,7 @@ from    constants import *
 from    utils.tiles import Tile
 
 class Board:
-    ''' Main class for the game board '''
+    ''' Class for the game board '''
 
     def __init__(self, rows: int = 4, cols: int = 4, tileSpawn: int = 1) -> None:
         '''
@@ -114,7 +114,6 @@ class Board:
             return False
         
         # Add tile
-        print(self.tileSpawn)
         self._spawn_tile(self.tileSpawn)
 
         return True

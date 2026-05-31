@@ -31,7 +31,7 @@ TIMER = 2
 
 ########## ========== MODULES =========== ##########
 board    = Board()
-animator = Animator()
+animator = Animator(board.board)
 renderer = Renderer(screen, board.rows, board.cols)
 
 ########## ========= GAME LOOP ========== ##########
@@ -57,17 +57,22 @@ while running:
     
     ########## ========= UPDATE ========= ##########
     if state == State.GAME:
-        # Movement
-        if action in MOVE_ACTIONS:
+        ######## ========= INPUT ========== ########
+        if action in MOVE_ACTIONS: # Movement
             board.move(action)
+            print(f"Movement with action {action}")
+            animator.set_tiles(board.board)
             # Win | Lose gamestate
             if board.hasWon():
                 state = State.WIN
             if not board.hasLegalMove():
                 state = State.LOSE
-        
-        if action == "newGame":
+
+        if action == "newGame": # New game
             board.reset()
+
+        ######## ========= UPDATE ========= ########
+        animator.update(dt)
 
     elif state == State.WIN:
         if action == "new_game":
@@ -86,7 +91,7 @@ while running:
     
     ########## ========== DRAW ========== ##########
     screen.fill(BACKGROUND_COLOUR)
-    renderer.draw(board, state)
+    renderer.draw(state, board, animator.get_tiles())
 
     ########## ======== DISPLAY ========= ##########
     pygame.display.flip()
