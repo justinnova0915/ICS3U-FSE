@@ -39,7 +39,6 @@ class Board:
         Checks for adjacent pairs of the same value in the row, then merges them  
         Note: this method merges leftwards
         '''
-
         # Record positions
         for tile in self.board[rowIndex]:
             tile.prev = tile.curr
@@ -47,25 +46,27 @@ class Board:
         self._compress_row(rowIndex)
         # Merge for each valid pair
         col = 0
-        while col < len(self.board[rowIndex]) - 1:
-            currTile = self.board[rowIndex][col]
-            nextTile = self.board[rowIndex][col+1]
-            if currTile.value == nextTile.value: # Can merge
-                temp_mergedVal  = currTile.value * 2
-                # Update the primary tile
-                currTile.value  = temp_mergedVal
-                currTile.curr   = (rowIndex, col)
-                # Remove the secondary tile
-                nextTile.value  = 0 # Now redundant; will remove
-                # Update score
-                self.score     += temp_mergedVal
-                # Iterate
-                col += 2 # Skip over atrophied secondary tile
+        while col < len(self.board[rowIndex]):
+            self.board[rowIndex][col].curr   = (rowIndex, col)
+            if col < len(self.board[rowIndex]) - 1: 
+                if self.board[rowIndex][col].value == self.board[rowIndex][col+1].value: # Can merge
+                    temp_mergedVal  = self.board[rowIndex][col].value * 2
+                    # Update the primary tile
+                    self.board[rowIndex][col].value  = temp_mergedVal
+                    # Remove the secondary tile
+                    self.board[rowIndex][col+1].value  = 0 # Now redundant; will remove
+                    # Update score
+                    self.score     += temp_mergedVal
+                    # Iterate
+                    col += 2 # Skip over atrophied secondary tile
+                else:
+                    col += 1 # Iterate to next
             else:
                 col += 1 # Iterate to next
         # Remove extra 0s, add 0s back to fill
         self._compress_row(rowIndex)
-        self.board[rowIndex] += [Tile(curr=(rowIndex, c)) for c in range(len(self.board[rowIndex]), self.cols)]
+        self.board[rowIndex] += [Tile(curr=(rowIndex, c), prev=(rowIndex, c)) for c in range(len(self.board[rowIndex]), self.cols)]
+        return
 
     def _merge_board(self):
         ''' Wrapper that performs _merge_row on the whole board '''
@@ -74,10 +75,18 @@ class Board:
 
     def _transpose(self) -> None:
         ''' Returns the board with the row and column swapped '''
+        for row in self.board:
+            for tile in row:
+                tile.curr = (tile.curr[1], tile.curr[0])
+                tile.prev = (tile.prev[1], tile.prev[0])
         self.board = [list(row) for row in zip(*self.board)] # Groups one index of each row in board
 
     def _reverse(self) -> None:
         ''' Reverses all the rows '''
+        for row in self.board:
+            for tile in row:
+                tile.curr = (tile.curr[0], self.cols - tile.curr[1] - 1)
+                tile.prev = (tile.prev[0], self.cols - tile.prev[1] - 1)
         self.board = [row[::-1] for row in self.board]
 
     def _move_left(self):
@@ -107,7 +116,10 @@ class Board:
     def move(self, direction: str) -> bool: # Did a move happen?
         ''' Exposed enpoint for moving provided a direction '''
         oldBoard = copy.deepcopy(self.board)
+        print(f"before: {[[tile.prev, tile.curr] for row in self.board for tile in row]}")
         self.move_func[direction]()
+        print(f"after: {[[tile.prev, tile.curr] for row in self.board for tile in row]}")
+
 
         # Don't update if no move
         if self.board == oldBoard:
@@ -115,7 +127,6 @@ class Board:
         
         # Add tile
         self._spawn_tile(self.tileSpawn)
-
         return True
 
 
@@ -151,15 +162,15 @@ class Board:
         for r in range(self.rows):
             for c in range(self.cols):
                 # 1. If there's an empty space, a move is always possible
-                if self.board[r][c] == 0:
+                if self.board[r][c].value == 0:
                     return True
                 
                 # 2. Check horizontal neighbor (to the right)
-                if c < self.cols - 1 and self.board[r][c] == self.board[r][c + 1]:
+                if c < self.cols - 1 and self.board[r][c].value == self.board[r][c + 1].value:
                     return True
                     
                 # 3. Check vertical neighbor (below)
-                if r < self.rows - 1 and self.board[r][c] == self.board[r + 1][c]:
+                if r < self.rows - 1 and self.board[r][c].value == self.board[r + 1][c].value:
                     return True
                     
         # If the loop finishes and found no zeros and no matches, the player is locked out

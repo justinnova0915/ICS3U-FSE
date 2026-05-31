@@ -17,27 +17,30 @@ class Animator:
 
     def set_tiles(self, board: list[list[Tile]]) -> None:
         ''' Set up tile list for animation '''
-        for tile in [tile for row in board for tile in row]:
-            if tile.prev is None:
-                tile.prev = tile.curr
-            self.tiles.append(tile)
+        self.tiles = []
+        self.elapsed = 0
 
-    def get_tiles(self) -> list[Tile]:
-        ''' Return tiles with updated (animated) positions '''
-        tiles = []
+        for row in board: 
+            for tile in row:
+                if tile.prev is None:
+                    tile.prev = tile.curr
+                self.tiles.append(tile)
+
+    
+    def _get_Tiles(self) -> list[Tile]:
+        return self.tiles
+
+    def update(self, dt: float) -> list[Tile]:
+        ''' Update animation timer & normalized progress '''
+        self.elapsed  += dt
+        self.progress  = self._time_clamp(self.elapsed / ANIMATION_DURATION)
+
         for tile in self.tiles:
-            # Does the reference break it???
             tile.pos = self._gridToPixel(*tile.prev).lerp(
                 self._gridToPixel(*tile.curr),
                 self._time_ease(self.progress)
             )
-            tiles.append(tile)
-        return tiles
-
-    def update(self, dt: float) -> None:
-        ''' Update animation timer & normalized progress '''
-        self.elapsed  += dt
-        self.progress  = self._time_clamp(self.elapsed / ANIMATION_DURATION)
+        return self.tiles
 
 
     ########## ======== TIME MAPPING ======== ##########

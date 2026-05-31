@@ -91,7 +91,7 @@ while running:
     
     ########## ========== DRAW ========== ##########
     screen.fill(BACKGROUND_COLOUR)
-    renderer.draw(state, board, animator.get_tiles())
+    renderer.draw(state, board, animator._get_Tiles())
 
     ########## ======== DISPLAY ========= ##########
     pygame.display.flip()
