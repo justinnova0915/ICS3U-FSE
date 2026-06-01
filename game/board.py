@@ -1,4 +1,5 @@
 from    random  import choice, random
+from functools import wraps
 import  copy
 
 from    constants import *
@@ -40,33 +41,26 @@ class Board:
         Note: this method merges leftwards
         '''
         # Record positions
-        for tile in self.board[rowIndex]:
-            tile.prev = tile.curr
         # Compress to remove null tiles
         self._compress_row(rowIndex)
         # Merge for each valid pair
         col = 0
-        while col < len(self.board[rowIndex]):
-            self.board[rowIndex][col].curr   = (rowIndex, col)
-            if col < len(self.board[rowIndex]) - 1: 
-                if self.board[rowIndex][col].value == self.board[rowIndex][col+1].value: # Can merge
-                    temp_mergedVal  = self.board[rowIndex][col].value * 2
-                    # Update the primary tile
-                    self.board[rowIndex][col].value  = temp_mergedVal
-                    # Remove the secondary tile
-                    self.board[rowIndex][col+1].value  = 0 # Now redundant; will remove
-                    # Update score
-                    self.score     += temp_mergedVal
-                    # Iterate
-                    col += 2 # Skip over atrophied secondary tile
-                else:
-                    col += 1 # Iterate to next
+        while col < len(self.board[rowIndex]) - 1:
+            if self.board[rowIndex][col].value == self.board[rowIndex][col+1].value: # Can merge
+                temp_mergedVal  = self.board[rowIndex][col].value * 2
+                # Update the primary tile
+                self.board[rowIndex][col].value  = temp_mergedVal
+                # Remove the secondary tile
+                self.board[rowIndex][col+1].value  = 0 # Now redundant; will remove
+                # Update score
+                self.score     += temp_mergedVal
+                # Iterate
+                col += 2 # Skip over atrophied secondary tile
             else:
                 col += 1 # Iterate to next
         # Remove extra 0s, add 0s back to fill
         self._compress_row(rowIndex)
         self.board[rowIndex] += [Tile(curr=(rowIndex, c), prev=(rowIndex, c)) for c in range(len(self.board[rowIndex]), self.cols)]
-        return
 
     def _merge_board(self):
         ''' Wrapper that performs _merge_row on the whole board '''
@@ -77,8 +71,8 @@ class Board:
         ''' Returns the board with the row and column swapped '''
         for row in self.board:
             for tile in row:
-                tile.curr = (tile.curr[1], tile.curr[0])
-                tile.prev = (tile.prev[1], tile.prev[0])
+                tile.curr = tile.curr[::-1]
+                tile.prev = tile.prev[::-1]
         self.board = [list(row) for row in zip(*self.board)] # Groups one index of each row in board
 
     def _reverse(self) -> None:
@@ -89,22 +83,40 @@ class Board:
                 tile.prev = (tile.prev[0], self.cols - tile.prev[1] - 1)
         self.board = [row[::-1] for row in self.board]
 
+    def _wrapper_move(method):
+        @wraps(method)
+
+        def wrapper(self):
+            for row in self.board:
+                for tile in row:
+                    tile.prev = tile.curr
+            method(self)
+            for r in range(len(self.board)-1):
+                for c in range(r):
+                    self.board[r][c].curr = (r, c)
+            
+        return wrapper
+
+    @_wrapper_move
     def _move_left(self):
         ''' Performs a left move '''
         self._merge_board() # Since the move method shifts to the left, there is no variation
-
+        
+    @_wrapper_move
     def _move_right(self):
         ''' Performs a right move '''
         self._reverse()
         self._merge_board()
         self._reverse()
-
+    
+    @_wrapper_move
     def _move_up(self):
         ''' Performs an up move '''
         self._transpose()
         self._merge_board()
         self._transpose()
-
+    
+    @_wrapper_move
     def _move_down(self):
         ''' Performs a down move '''
         self._transpose()
