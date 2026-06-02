@@ -131,11 +131,10 @@ class Board:
         self.move_func[direction]()
 
         # Don't update if no move
-        if self.board == oldBoard:
+        if [tile.value for row in self.board for tile in row] == [oldtile.value for oldrow in oldBoard for oldtile in oldrow]:
             return False
-        
-        # Add tile
-        self._spawn_tile(self.tileSpawn)
+        else:
+            self._spawn_tile(self.tileSpawn)
         return True
 
 
@@ -197,7 +196,6 @@ class Board:
 
 
     ########## ========= WIN & LOSS ========= ##########
-
     def hasLegalMove(self) -> bool:
         ''' Checks if any moves are possible without altering the board '''
         for r in range(self.rows):
