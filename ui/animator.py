@@ -11,36 +11,48 @@ class Animator:
     def __init__(self, board: list[list[Tile]]):
         self.elapsed:  float      = 0
         self.progress: float      = 0
-        self.active:   bool       = False
+        self.active:   bool       = True
         self.tiles:    list[Tile] = []
-        self.set_tiles(board)
+        self._set_tiles(board)
 
-    def set_tiles(self, board: list[list[Tile]]) -> None:
-        ''' Set up tile list for animation '''
-        self.tiles = []
+
+    ########## =========== SET UP =========== ##########
+
+    def reset(self, board: list[list[Tile]]) -> None:
+        self.active  = True
+        self.tiles   = []
         self.elapsed = 0
+        self._set_tiles(board)
 
+    def _set_tiles(self, board: list[list[Tile]]) -> None:
+        ''' Set up tile list for animation '''
         for row in board: 
             for tile in row:
-                if tile.prev is None:
-                    tile.prev = tile.curr
                 self.tiles.append(tile)
-
     
-    def _get_Tiles(self) -> list[Tile]:
+    def get_animatedTiles(self) -> list[Tile]:
         return self.tiles
+
+
+    ########## =========== UPDATE =========== ##########
 
     def update(self, dt: float) -> list[Tile]:
         ''' Update animation timer & normalized progress '''
+        if not self.active:
+            return self.tiles
         self.elapsed  += dt
         self.progress  = self._time_clamp(self.elapsed / ANIMATION_DURATION)
 
         for tile in self.tiles:
-            tile.pos = self._gridToPixel(*tile.prev).lerp(
+            tile.pos = Vector(self._gridToPixel(*tile.prev)).lerp(
                 self._gridToPixel(*tile.curr),
                 self._time_ease(self.progress)
             )
         return self.tiles
+    
+
+    ########## ========= ANIMATIONS ========= ##########
+
 
 
     ########## ======== TIME MAPPING ======== ##########
@@ -56,8 +68,8 @@ class Animator:
         return 1.0 + c3 * ((t - 1.0) ** 3) + c1 * ((t - 1.0) ** 2)
     
     
-    ########## ======= GRID TO PIXEL ======== ##########
-    
+    ########## ======= MISCELLANEOUS ======== ##########
+
     def _gridToPixel(self, rowIndex: int, colIndex: int) -> Vector:
         ''' Convert board coordinates to pixel coordinates '''
         x = CELL_PAD.w + (CELL_SIZE.w + CELL_PAD.w) * colIndex

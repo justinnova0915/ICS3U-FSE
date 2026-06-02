@@ -40,10 +40,6 @@ class Board:
         Checks for adjacent pairs of the same value in the row, then merges them  
         Note: this method merges leftwards
         '''
-        # Record positions & Spawn animation
-        for tile in self.board[rowIndex]:
-            tile.prev  = tile.curr # Record position
-            tile.spawn = False # Stop spawn animations
         # Compress to remove null tiles
         self._compress_row(rowIndex)
         # Merge for each valid pair
@@ -52,13 +48,13 @@ class Board:
             self._set_curr(rowIndex, col, (rowIndex, col))
             if col < len(self.board[rowIndex]) - 1:
                 if self._get_value(rowIndex, col) == self._get_value(rowIndex, col+1): # Can merge
-                    temp_mergedVal  = self.board[rowIndex][col].value * 2
+                    temp_mergedVal = self.board[rowIndex][col].value * 2
                     # Update the primary tile
                     self._set_value(rowIndex, col, temp_mergedVal)
                     # Remove the secondary tile
                     self._set_value(rowIndex, col+1, 0) # Now redundant; will remove
                     # Update score
-                    self.score     += temp_mergedVal
+                    self.score += temp_mergedVal
                     # Iterate
                     col += 2 # Skip over atrophied secondary tile
                 else:
@@ -87,10 +83,13 @@ class Board:
         @wraps(method)
 
         def wrapper(self):
+            # Update prev
             for row in self.board:
                 for tile in row:
                     tile.prev = tile.curr
+            # 'move' method
             method(self)
+            # Update curr
             for r in range(self.rows):
                 for c in range(self.cols):
                     self.board[r][c].curr = (r, c)
@@ -157,11 +156,7 @@ class Board:
     def _get_prev(self, row: int, col: int) -> tuple[int, int]:
         ''' Gets the previous tile position at a specific index '''
         return self.board[row][col].prev
-
-    def _get_emptyCells(self) -> list[tuple[int, int]]:
-        ''' Returns all the cells that has no numbers in it '''
-        return [(r, c) for r in range(self.rows) for c in range(self.cols) if self.board[r][c].value == 0]
-
+    
     def _set_value(self, row: int, col: int, val: int) -> None:
         ''' Sets the value of a tile given the index '''
         self.board[row][col].value = val
@@ -173,16 +168,32 @@ class Board:
     def _set_prev(self, row: int, col: int, val: tuple[int, int]) -> None:
         ''' Set the previous tile position tile at a specific index '''
         self.board[row][col].prev = val
+    
+
+    ########## ========= SPAWN TILE ========= ##########
+
+    def _get_emptyTiles(self) -> list[tuple[int, int]]:
+        ''' Returns all the cells that has no numbers in it '''
+        return [(r, c) for r in range(self.rows) for c in range(self.cols) if self.board[r][c].value == 0]
 
     def _spawn_tile(self, num: int = 1) -> None:
         ''' Spawns new tiles at random empty spaces '''
-        empty = self._get_emptyCells()
+        empty = self._get_emptyTiles()
         for _ in range(num):
-            if not empty: return # Break if no empty
-            randomTile = choice(empty)
+            if not empty: return # Stop if no empty tiles
+            randomIndex = choice(empty)
             val = 4 if random() < 0.1 else 2
-            self._set_value(*randomTile, val)
-            empty.remove(randomTile)
+            # Remove null tile, add new tile
+            self.board[randomIndex[0]].pop(randomIndex[1])
+            self.board[randomIndex[0]].insert(
+                randomIndex[1],
+                Tile(
+                    curr=randomIndex,
+                    value=val
+                )
+            )
+            # Remove index from empty indexes
+            empty.remove(randomIndex)
 
 
     ########## ========= WIN & LOSS ========= ##########

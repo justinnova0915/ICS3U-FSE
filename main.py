@@ -60,8 +60,7 @@ while running:
         ######## ========= INPUT ========== ########
         if action in MOVE_ACTIONS: # Movement
             board.move(action)
-            print(f"Movement with action {action}")
-            animator.set_tiles(board.board)
+            animator.reset(board.board)
             # Win | Lose gamestate
             if board.hasWon():
                 state = State.WIN
@@ -91,7 +90,7 @@ while running:
     
     ########## ========== DRAW ========== ##########
     screen.fill(BACKGROUND_COLOUR)
-    renderer.draw(state, board, animator._get_Tiles())
+    renderer.draw(state, board, animator.get_animatedTiles())
 
     ########## ======== DISPLAY ========= ##########
     pygame.display.flip()
