@@ -58,7 +58,7 @@ while running:
     ########## ========= UPDATE ========= ##########
     if state == State.GAME:
         ######## ========= INPUT ========== ########
-        if action in MOVE_ACTIONS: # Movement
+        if action in MOVE_ACTIONS and not animator.active: # Movement
             board.move(action)
             animator.load_tiles(board.board)
             # Win | Lose gamestate
