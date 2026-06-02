@@ -1,4 +1,5 @@
 from    random  import choice, random
+from    functools import wraps
 import  copy
 
 from    constants import *
@@ -67,7 +68,6 @@ class Board:
         # Remove extra 0s, add 0s back to fill
         self._compress_row(rowIndex)
         self.board[rowIndex] += [Tile(curr=(rowIndex, c), prev=(rowIndex, c)) for c in range(len(self.board[rowIndex]), self.cols)]
-        return
 
     def _merge_board(self):
         ''' Wrapper that performs _merge_row on the whole board '''
@@ -76,38 +76,48 @@ class Board:
 
     def _transpose(self) -> None:
         ''' Returns the board with the row and column swapped '''
-        for row in self.board:
-            for tile in row:
-                tile.curr = (tile.curr[1], tile.curr[0])
-                tile.prev = (tile.prev[1], tile.prev[0])
         self.board = [list(row) for row in zip(*self.board)] # Groups one index of each row in board
 
     def _reverse(self) -> None:
         ''' Reverses all the rows '''
-        for row in self.board:
-            for tile in row:
-                tile.curr = (tile.curr[0], self.cols - tile.curr[1] - 1)
-                tile.prev = (tile.prev[0], self.cols - tile.prev[1] - 1)
         self.board = [row[::-1] for row in self.board]
 
+    @staticmethod
+    def _wrapper_move(method):
+        @wraps(method)
+
+        def wrapper(self):
+            for row in self.board:
+                for tile in row:
+                    tile.prev = tile.curr
+            method(self)
+            for r in range(self.rows):
+                for c in range(self.cols):
+                    self.board[r][c].curr = (r, c)
+            
+        return wrapper
+
+    @_wrapper_move
     def _move_left(self):
         ''' Performs a left move '''
         # tile.prev = tile.curr
         self._merge_board() # Since the move method shifts to the left, there is no variation
-        # tile.curr = 
-
+        
+    @_wrapper_move
     def _move_right(self):
         ''' Performs a right move '''
         self._reverse()
         self._merge_board()
         self._reverse()
-
+    
+    @_wrapper_move
     def _move_up(self):
         ''' Performs an up move '''
         self._transpose()
         self._merge_board()
         self._transpose()
-
+    
+    @_wrapper_move
     def _move_down(self):
         ''' Performs a down move '''
         self._transpose()
