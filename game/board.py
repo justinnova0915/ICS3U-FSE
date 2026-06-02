@@ -69,18 +69,10 @@ class Board:
 
     def _transpose(self) -> None:
         ''' Returns the board with the row and column swapped '''
-        for row in self.board:
-            for tile in row:
-                tile.curr = tile.curr[::-1]
-                tile.prev = tile.prev[::-1]
         self.board = [list(row) for row in zip(*self.board)] # Groups one index of each row in board
 
     def _reverse(self) -> None:
         ''' Reverses all the rows '''
-        for row in self.board:
-            for tile in row:
-                tile.curr = (tile.curr[0], self.cols - tile.curr[1] - 1)
-                tile.prev = (tile.prev[0], self.cols - tile.prev[1] - 1)
         self.board = [row[::-1] for row in self.board]
 
     def _wrapper_move(method):
@@ -91,8 +83,8 @@ class Board:
                 for tile in row:
                     tile.prev = tile.curr
             method(self)
-            for r in range(len(self.board)-1):
-                for c in range(r):
+            for r in range(self.rows):
+                for c in range(self.cols):
                     self.board[r][c].curr = (r, c)
             
         return wrapper
