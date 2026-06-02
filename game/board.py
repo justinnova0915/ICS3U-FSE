@@ -40,10 +40,6 @@ class Board:
         Checks for adjacent pairs of the same value in the row, then merges them  
         Note: this method merges leftwards
         '''
-        # Record positions & Spawn animation
-        for tile in self.board[rowIndex]:
-            tile.prev  = tile.curr # Record position
-            tile.spawn = False # Stop spawn animations
         # Compress to remove null tiles
         self._compress_row(rowIndex)
         # Merge for each valid pair
@@ -182,6 +178,7 @@ class Board:
             randomTile = choice(empty)
             val = 4 if random() < 0.1 else 2
             self._set_value(*randomTile, val)
+            self.board[randomTile[0]][randomTile[1]].prev = self.board[randomTile[0]][randomTile[1]].curr
             empty.remove(randomTile)
 
 
@@ -218,7 +215,7 @@ class Board:
         ''' Reverts the game state to inital state and clears the board '''
         self.rows      = rows
         self.cols      = cols
-        self.board     = [[Tile(curr=(r, c)) for c in range(self.cols)] for r in range(self.rows)]
+        self.board     = [[Tile(curr=(r, c), prev=(r, c)) for c in range(self.cols)] for r in range(self.rows)]
         self.tileSpawn = tileSpawn
         self.score     = 0
         # Add starting tiles
