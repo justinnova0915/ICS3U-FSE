@@ -11,7 +11,7 @@ class Animator:
     def __init__(self, board: list[list[Tile]]):
         self.elapsed:  float      = 0
         self.progress: float      = 0
-        self.active:   bool       = 0
+        self.active:   bool       = False
         self.tiles:    list[Tile] = []
         self.set_tiles(board)
 
@@ -51,7 +51,7 @@ class Animator:
 
     def _time_ease(self, t: float) -> float:
         ''' Time-mapping function '''
-        c1 = 1.1
+        c1 = 0.5
         c3 = c1 + 1.0
         return 1.0 + c3 * ((t - 1.0) ** 3) + c1 * ((t - 1.0) ** 2)
     

@@ -39,22 +39,23 @@ class Board:
         Checks for adjacent pairs of the same value in the row, then merges them  
         Note: this method merges leftwards
         '''
-        # Record positions
+        # Record positions & Spawn animation
         for tile in self.board[rowIndex]:
-            tile.prev = tile.curr
+            tile.prev  = tile.curr # Record position
+            tile.spawn = False # Stop spawn animations
         # Compress to remove null tiles
         self._compress_row(rowIndex)
         # Merge for each valid pair
         col = 0
         while col < len(self.board[rowIndex]):
-            self.board[rowIndex][col].curr   = (rowIndex, col)
-            if col < len(self.board[rowIndex]) - 1: 
-                if self.board[rowIndex][col].value == self.board[rowIndex][col+1].value: # Can merge
+            self._set_curr(rowIndex, col, (rowIndex, col))
+            if col < len(self.board[rowIndex]) - 1:
+                if self._get_value(rowIndex, col) == self._get_value(rowIndex, col+1): # Can merge
                     temp_mergedVal  = self.board[rowIndex][col].value * 2
                     # Update the primary tile
-                    self.board[rowIndex][col].value  = temp_mergedVal
+                    self._set_value(rowIndex, col, temp_mergedVal)
                     # Remove the secondary tile
-                    self.board[rowIndex][col+1].value  = 0 # Now redundant; will remove
+                    self._set_value(rowIndex, col+1, 0) # Now redundant; will remove
                     # Update score
                     self.score     += temp_mergedVal
                     # Iterate
@@ -91,7 +92,9 @@ class Board:
 
     def _move_left(self):
         ''' Performs a left move '''
+        # tile.prev = tile.curr
         self._merge_board() # Since the move method shifts to the left, there is no variation
+        # tile.curr = 
 
     def _move_right(self):
         ''' Performs a right move '''
@@ -116,10 +119,7 @@ class Board:
     def move(self, direction: str) -> bool: # Did a move happen?
         ''' Exposed enpoint for moving provided a direction '''
         oldBoard = copy.deepcopy(self.board)
-        print(f"before: {[[tile.prev, tile.curr] for row in self.board for tile in row]}")
         self.move_func[direction]()
-        print(f"after: {[[tile.prev, tile.curr] for row in self.board for tile in row]}")
-
 
         # Don't update if no move
         if self.board == oldBoard:
@@ -133,16 +133,36 @@ class Board:
     ########## ===== TILE MODIFICATION ====== ##########
 
     def _get_tile(self, row: int, col: int) -> Tile:
-        ''' Gets the tile value at a specific index '''
+        ''' Gets the tile at a specific index '''
         return self.board[row][col]
+    
+    def _get_value(self, row: int, col: int) -> int:
+        ''' Gets the tile at a specific index '''
+        return self.board[row][col].value
+    
+    def _get_curr(self, row: int, col: int) -> tuple[int, int]:
+        ''' Get the current tile position tile at a specific index '''
+        return self.board[row][col].curr
+    
+    def _get_prev(self, row: int, col: int) -> tuple[int, int]:
+        ''' Gets the previous tile position at a specific index '''
+        return self.board[row][col].prev
 
     def _get_emptyCells(self) -> list[tuple[int, int]]:
         ''' Returns all the cells that has no numbers in it '''
         return [(r, c) for r in range(self.rows) for c in range(self.cols) if self.board[r][c].value == 0]
 
-    def _set_tile(self, row: int, col: int, val: int) -> None:
-        ''' Sets the values of a tile given the index '''
+    def _set_value(self, row: int, col: int, val: int) -> None:
+        ''' Sets the value of a tile given the index '''
         self.board[row][col].value = val
+    
+    def _set_curr(self, row: int, col: int, val: tuple[int, int]) -> None:
+        ''' Set the current tile position tile at a specific index '''
+        self.board[row][col].curr = val
+    
+    def _set_prev(self, row: int, col: int, val: tuple[int, int]) -> None:
+        ''' Set the previous tile position tile at a specific index '''
+        self.board[row][col].prev = val
 
     def _spawn_tile(self, num: int = 1) -> None:
         ''' Spawns new tiles at random empty spaces '''
@@ -151,7 +171,7 @@ class Board:
             if not empty: return # Break if no empty
             randomTile = choice(empty)
             val = 4 if random() < 0.1 else 2
-            self._set_tile(*randomTile, val)
+            self._set_value(*randomTile, val)
             empty.remove(randomTile)
 
 
