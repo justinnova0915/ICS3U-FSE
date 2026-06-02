@@ -229,7 +229,7 @@ class Board:
         ''' Reverts the game state to inital state and clears the board '''
         self.rows      = rows
         self.cols      = cols
-        self.board     = [[Tile(curr=(r, c)) for c in range(self.cols)] for r in range(self.rows)]
+        self.board     = [[Tile(curr=(r, c), prev=(r, c)) for c in range(self.cols)] for r in range(self.rows)]
         self.tileSpawn = tileSpawn
         self.score     = 0
         # Add starting tiles
