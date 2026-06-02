@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from collections.abc import Callable
+from functools import wraps
 
 from utils.tiles    import Tile
 from utils.vector   import Vector
@@ -44,16 +45,30 @@ class Animator:
         self.progress  = self._time_clamp(self.elapsed / ANIMATION_DURATION)
 
         for tile in self.tiles:
-            tile.pos = Vector(self._gridToPixel(*tile.prev)).lerp(
-                self._gridToPixel(*tile.curr),
-                self._time_ease(self.progress)
-            )
+            if tile.prev == (-1, -1):
+                self.lerp_spawn(tile)
+            else:
+                self.lerp(tile)
         return self.tiles
     
 
     ########## ========= ANIMATIONS ========= ##########
 
+    def lerp_spawn(self, tile: Tile):
+        tile.size = Vector((0, 0)).lerp(
+            (CELL_SIZE), 
+            self._time_ease(self.progress)
+        )
+        tile.pos = Vector(self._gridToPixel(*tile.curr)+(CELL_SIZE[0]/2, CELL_SIZE[1]/2)).lerp(
+            self._gridToPixel(*tile.curr),
+            self._time_ease(self.progress)
+        )
 
+    def lerp(self, tile: Tile):
+        tile.pos = Vector(self._gridToPixel(*tile.prev)).lerp(
+            self._gridToPixel(*tile.curr),
+            self._time_ease(self.progress)
+        )
 
     ########## ======== TIME MAPPING ======== ##########
 

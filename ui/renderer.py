@@ -76,7 +76,7 @@ class Renderer:
     def _render_board_tile(self, tile: Tile) -> None:
         ''' Renders individual tiles on top of the board'''
         if tile.value != 0:
-            rect = pygame.Rect(*(tile.pos.to_int()), *CELL_SIZE)
+            rect = pygame.Rect(*(tile.pos.to_int()), *tile.size)
             # Background
             colour = TILE_COLOURS.get(tile.value, TILE_COLOURS["default"])
             pygame.draw.rect(self.boardSurf, colour, rect, border_radius=BOARD_TILE_ROUND)

@@ -9,6 +9,7 @@ class Tile():
     pos:    Vector          = None
     value:  int             = 0
     merged: bool            = False
+    size:   Vector          = None
 
     def __repr__(self):
         return f"Tile({self.value})"
