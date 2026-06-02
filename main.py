@@ -60,7 +60,7 @@ while running:
         ######## ========= INPUT ========== ########
         if action in MOVE_ACTIONS: # Movement
             board.move(action)
-            animator.reset(board.board)
+            animator.load_tiles(board.board)
             # Win | Lose gamestate
             if board.hasWon():
                 state = State.WIN

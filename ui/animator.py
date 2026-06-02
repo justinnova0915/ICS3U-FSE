@@ -12,14 +12,14 @@ class Animator:
     def __init__(self, board: list[list[Tile]]):
         self.elapsed:  float      = 0
         self.progress: float      = 0
-        self.active:   bool       = True
+        self.active:   bool       = False
         self.tiles:    list[Tile] = []
         self._set_tiles(board)
 
 
     ########## =========== SET UP =========== ##########
 
-    def reset(self, board: list[list[Tile]]) -> None:
+    def load_tiles(self, board: list[list[Tile]]) -> None:
         self.active  = True
         self.tiles   = []
         self.elapsed = 0
@@ -29,6 +29,8 @@ class Animator:
         ''' Set up tile list for animation '''
         for row in board: 
             for tile in row:
+                tile.pos = Vector(self._gridToPixel(*tile.curr))
+                tile.size = CELL_SIZE
                 self.tiles.append(tile)
     
     def get_animatedTiles(self) -> list[Tile]:
@@ -44,6 +46,9 @@ class Animator:
         self.elapsed  += dt
         self.progress  = self._time_clamp(self.elapsed / ANIMATION_DURATION)
 
+        if self.progress == 1:
+            self.active = False
+        
         for tile in self.tiles:
             if tile.prev == (-1, -1):
                 self.lerp_spawn(tile)
