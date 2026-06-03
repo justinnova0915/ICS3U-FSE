@@ -17,9 +17,9 @@ class Animator:
         self._set_tiles(board)
 
 
-    ########## =========== SET UP =========== ##########
+    ########## ===== CONFIG & RETRIEVAL ===== ##########
 
-    def load_tiles(self, board: list[list[Tile]]) -> None:
+    def startAnimation(self, board: list[list[Tile]]) -> None:
         self.active  = True
         self.tiles   = []
         self.elapsed = 0
@@ -30,7 +30,7 @@ class Animator:
         for row in board: 
             for tile in row:
                 tile.pos = Vector(self._gridToPixel(*tile.curr))
-                tile.size = CELL_SIZE
+                tile.size = Vector(CELL_SIZE)
                 self.tiles.append(tile)
     
     def get_animatedTiles(self) -> list[Tile]:
@@ -50,16 +50,20 @@ class Animator:
             self.active = False
         
         for tile in self.tiles:
-            if tile.prev == (-1, -1):
-                self.lerp_spawn(tile)
-            else:
-                self.lerp(tile)
+            self._animationFunction(tile)(tile)
+            
         return self.tiles
     
 
     ########## ========= ANIMATIONS ========= ##########
 
-    def lerp_spawn(self, tile: Tile):
+    def _animationFunction(self, tile: Tile) -> Callable:
+        if tile.prev == (-1, -1):
+            return self._animation_spawn
+        else:
+            return self._animation_move
+
+    def _animation_spawn(self, tile: Tile) -> None:
         tile.size = Vector((0, 0)).lerp(
             (CELL_SIZE), 
             self._time_ease(self.progress)
@@ -69,7 +73,7 @@ class Animator:
             self._time_ease(self.progress)
         )
 
-    def lerp(self, tile: Tile):
+    def _animation_move(self, tile: Tile) -> None:
         tile.pos = Vector(self._gridToPixel(*tile.prev)).lerp(
             self._gridToPixel(*tile.curr),
             self._time_ease(self.progress)

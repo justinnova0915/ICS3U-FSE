@@ -84,15 +84,15 @@ class Board:
 
         def wrapper(self):
             # Update prev
-            for row in self.board:
-                for tile in row:
-                    tile.prev = tile.curr
+            for r in range(self.rows):
+                for c in range(self.cols):
+                    self._set_prev(r, c, self._get_curr(r, c))
             # 'move' method
             method(self)
             # Update curr
             for r in range(self.rows):
                 for c in range(self.cols):
-                    self.board[r][c].curr = (r, c)
+                    self._set_curr(r, c, (r, c))
             
         return wrapper
 
@@ -125,16 +125,14 @@ class Board:
         self._reverse()
         self._transpose()
 
-    def move(self, direction: str) -> bool: # Did a move happen?
-        ''' Exposed enpoint for moving provided a direction '''
+    def tryMove(self, direction: str) -> bool: # Did a move happen?
+        ''' Exposed endpoint for moving provided a direction '''
         oldBoard = copy.deepcopy(self.board)
         self.move_func[direction]()
 
         # Don't update if no move
-        if [tile.value for row in self.board for tile in row] == [oldtile.value for oldrow in oldBoard for oldtile in oldrow]:
+        if self._get_boardValues() == self._get_boardValues(oldBoard):
             return False
-        else:
-            self._spawn_tile(self.tileSpawn)
         return True
 
 
@@ -175,7 +173,7 @@ class Board:
         ''' Returns all the cells that has no numbers in it '''
         return [(r, c) for r in range(self.rows) for c in range(self.cols) if self.board[r][c].value == 0]
 
-    def _spawn_tile(self, num: int = 1) -> None:
+    def spawn_tile(self, num: int = 1) -> None:
         ''' Spawns new tiles at random empty spaces '''
         empty = self._get_emptyTiles()
         for _ in range(num):
@@ -195,23 +193,27 @@ class Board:
             empty.remove(randomIndex)
 
 
-    ########## ========= WIN & LOSS ========= ##########
+    ########## ======= WIN LOSS CHECK ======= ##########
+
+    def _get_boardValues(self, board: list[list[Tile]] | None = None) -> list[list[int]]:
+        if board is None:
+            return [[tile.value for tile in row] for row in self.board]
+        else:
+            return [[tile.value for tile in row] for row in board]
+
     def hasLegalMove(self) -> bool:
         ''' Checks if any moves are possible without altering the board '''
         for r in range(self.rows):
             for c in range(self.cols):
                 # 1. If there's an empty space, a move is always possible
-                if self.board[r][c].value == 0:
+                if self._get_value(r, c) == 0:
                     return True
-                
                 # 2. Check horizontal neighbor (to the right)
-                if c < self.cols - 1 and self.board[r][c].value == self.board[r][c + 1].value:
+                if c < self.cols - 1 and self._get_value(r, c) == self._get_value(r, c + 1):
                     return True
-                    
                 # 3. Check vertical neighbor (below)
-                if r < self.rows - 1 and self.board[r][c].value == self.board[r + 1][c].value:
+                if r < self.rows - 1 and self._get_value(r, c) == self._get_value(r + 1, c):
                     return True
-                    
         # If the loop finishes and found no zeros and no matches, the player is locked out
         return False
 
@@ -231,7 +233,7 @@ class Board:
         self.tileSpawn = tileSpawn
         self.score     = 0
         # Add starting tiles
-        self._spawn_tile(2)
+        self.spawn_tile(2)
 
 
     ########## =========== DEBUG ============ ##########

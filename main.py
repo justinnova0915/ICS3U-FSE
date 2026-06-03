@@ -59,8 +59,9 @@ while running:
     if state == State.GAME:
         ######## ========= INPUT ========== ########
         if action in MOVE_ACTIONS and not animator.active: # Movement
-            board.move(action)
-            animator.load_tiles(board.board)
+            if board.tryMove(action):
+                board.spawn_tile()
+            animator.startAnimation(board.board)
             # Win | Lose gamestate
             if board.hasWon():
                 state = State.WIN
