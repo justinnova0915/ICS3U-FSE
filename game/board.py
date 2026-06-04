@@ -136,36 +136,57 @@ class Board:
         return True
 
 
-    ########## ===== TILE MODIFICATION ====== ##########
-
+    ########## ============ TILE ============ ##########
+    
     def _get_tile(self, row: int, col: int) -> Tile:
         ''' Gets the tile at a specific index '''
         return self.board[row][col]
     
     def _get_value(self, row: int, col: int) -> int:
         ''' Gets the tile at a specific index '''
-        return self.board[row][col].value
+        return self._get_tile(row, col).value
     
     def _get_curr(self, row: int, col: int) -> tuple[int, int]:
         ''' Get the current tile position tile at a specific index '''
-        return self.board[row][col].curr
+        return self._get_tile(row, col).curr
     
     def _get_prev(self, row: int, col: int) -> tuple[int, int]:
         ''' Gets the previous tile position at a specific index '''
-        return self.board[row][col].prev
+        return self._get_tile(row, col).prev
+    
+    def _set_tile(self, row: int, col: int, val: int) -> None:
+        '''
+        Sets a new tile object at the given index  
+        Note: Removes the previous tile object
+        '''
+        self.board[row].pop(col)
+        self.board[row].insert(col,
+            Tile(
+                curr=(row, col),
+                value=val
+            )
+        )
+
+    def _del_tile(self, row: int, col: int) -> None:
+        '''
+        Removes the currently occupied tile object
+        Note: Replaces the index with a new object
+        '''
+        self.board[row].pop(col)
+        self.board[row].insert(col, Tile((row, col)))
     
     def _set_value(self, row: int, col: int, val: int) -> None:
         ''' Sets the value of a tile given the index '''
-        self.board[row][col].value = val
+        self._get_tile(row, col).value = val
     
     def _set_curr(self, row: int, col: int, val: tuple[int, int]) -> None:
         ''' Set the current tile position tile at a specific index '''
-        self.board[row][col].curr = val
+        self._get_tile(row, col).curr = val
     
     def _set_prev(self, row: int, col: int, val: tuple[int, int]) -> None:
         ''' Set the previous tile position tile at a specific index '''
-        self.board[row][col].prev = val
-    
+        self._get_tile(row, col).prev = val
+
 
     ########## ========= SPAWN TILE ========= ##########
 
@@ -180,15 +201,8 @@ class Board:
             if not empty: return # Stop if no empty tiles
             randomIndex = choice(empty)
             val = 4 if random() < 0.1 else 2
-            # Remove null tile, add new tile
-            self.board[randomIndex[0]].pop(randomIndex[1])
-            self.board[randomIndex[0]].insert(
-                randomIndex[1],
-                Tile(
-                    curr=randomIndex,
-                    value=val
-                )
-            )
+            # Add new tile
+            self._set_tile(*randomIndex, val)
             # Remove index from empty indexes
             empty.remove(randomIndex)
 
@@ -220,7 +234,7 @@ class Board:
     def hasWon(self) -> bool:
         ''' Check if the user has won '''
         return any(
-            self._get_tile(r, c) == WIN_TILE
+            self._get_value(r, c) == WIN_TILE
             for r in range(self.rows)
             for c in range(self.cols)
         )
@@ -229,7 +243,7 @@ class Board:
         ''' Reverts the game state to inital state and clears the board '''
         self.rows      = rows
         self.cols      = cols
-        self.board     = [[Tile(curr=(r, c), prev=(r, c)) for c in range(self.cols)] for r in range(self.rows)]
+        self.board     = [[Tile(curr=(r, c)) for c in range(self.cols)] for r in range(self.rows)]
         self.tileSpawn = tileSpawn
         self.score     = 0
         # Add starting tiles

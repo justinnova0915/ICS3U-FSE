@@ -74,7 +74,9 @@ TILE_TEXT_COLOURS = {
     "default": (249, 246, 242),
 }
 
-CELL_SIZE = Size (125, 125)
-CELL_PAD  = Size (15,  15 )
+CELL_SIZE = Size(125, 125)
+
+BOARD_PAD = Size(20, 20)
+CELL_PAD  = Size(15, 15)
 
 ANIMATION_DURATION = 0.15
