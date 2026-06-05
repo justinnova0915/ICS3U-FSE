@@ -1,6 +1,7 @@
-from pathlib     import Path
-from dataclasses import dataclass
-from collections import namedtuple
+import json
+from   pathlib     import Path
+from   dataclasses import dataclass
+from   collections import namedtuple
 
 ROOT_PATH = str(Path(__file__).parent)
 
@@ -12,45 +13,51 @@ def pathJoin(root: str | Path, path: str, *args) -> str:
 
 Coord    = namedtuple("Coord",      ['x', 'y'])
 Size     = namedtuple("Size",       ['w', 'h'])
-    
 
-def animation_timeMap(t: float) -> float: # Ease out back
-    c1 = 0.5
-    c3 = c1 + 1.0
-    return 1.0 + c3 * ((t - 1.0) ** 3) + c1 * ((t - 1.0) ** 2)
+########## ============= UI ============= ##########
 
-FONT_FILENAME = pathJoin(ROOT_PATH, "assets", "clearSans.ttf")
-
-WIN_TILE = 2048
-
-MOVE_ACTIONS = ["left", "right", "up", "down"]
+FONTSIZE_DEFAULT = 36
 
 BACKGROUND_COLOUR = (250, 248, 239)
 
+SCORE_BGCOLOUR     = (156, 137, 121)
+SCORE_COLOUR_TITLE = (248, 238, 228)
+SCORE_COLOUR_SCORE = (250, 248, 239)
+
+
+########## ======== BOARD & CELL ======== ##########
+
+BOARD_ROUND  = 25
+BOARD_PAD    = Size(20,  20 )
 BOARD_COLOUR = (156, 137, 121)
-BOARD_TILE_COLOUR = (189, 172, 151)
-BOARD_ROUND = 25
-BOARD_TILE_ROUND = 10
+
+CELL_SIZE   = Size(125, 125)
+CELL_PAD    = Size(15,  15 )
+CELL_ROUND  = 10
+CELL_COLOUR = (189, 172, 151)
+
+
+########## =========== TILES ============ ##########
 
 TILE_KEYS = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, "default"]
 
-TILE_FONT_LARGE  = 50   # 2, 4 ... 64
-TILE_FONT_MEDIUM = 46   # 128, 256, 512
-TILE_FONT_SMALL  = 36   # 1024, 2048+
+TILE_FONTSIZE_LARGE  = 50   # 2, 4 ... 64
+TILE_FONTSIZE_MEDIUM = 46   # 128, 256, 512
+TILE_FONTSIZE_SMALL  = 36   # 1024, 2048+
 
-TILE_FONT_SIZE = {
-    2:    TILE_FONT_LARGE,
-    4:    TILE_FONT_LARGE,
-    8:    TILE_FONT_LARGE,
-    16:   TILE_FONT_LARGE,
-    32:   TILE_FONT_LARGE,
-    64:   TILE_FONT_LARGE,
-    128:  TILE_FONT_MEDIUM,
-    256:  TILE_FONT_MEDIUM,
-    512:  TILE_FONT_MEDIUM,
-    1024: TILE_FONT_SMALL,
-    2048: TILE_FONT_SMALL,
-    "default": TILE_FONT_SMALL,
+TILE_FONTSIZE = {
+    2:    TILE_FONTSIZE_LARGE,
+    4:    TILE_FONTSIZE_LARGE,
+    8:    TILE_FONTSIZE_LARGE,
+    16:   TILE_FONTSIZE_LARGE,
+    32:   TILE_FONTSIZE_LARGE,
+    64:   TILE_FONTSIZE_LARGE,
+    128:  TILE_FONTSIZE_MEDIUM,
+    256:  TILE_FONTSIZE_MEDIUM,
+    512:  TILE_FONTSIZE_MEDIUM,
+    1024: TILE_FONTSIZE_SMALL,
+    2048: TILE_FONTSIZE_SMALL,
+    "default": TILE_FONTSIZE_SMALL,
 }
 
 TILE_COLOURS = {
@@ -74,9 +81,15 @@ TILE_TEXT_COLOURS = {
     "default": (249, 246, 242),
 }
 
-CELL_SIZE = Size(125, 125)
-
-BOARD_PAD = Size(20, 20)
-CELL_PAD  = Size(15, 15)
+########## ========= CONSTANTS ========== ##########
 
 ANIMATION_DURATION = 0.15
+
+WIN_TILE = 2048
+
+MOVE_ACTIONS = ["left", "right", "up", "down"]
+
+with open(pathJoin(ROOT_PATH, "data", "highscore.json")) as file:
+    HIGHSCORE = json.load(file)["highscore"]
+
+FONT_FILENAME = pathJoin(ROOT_PATH, "assets", "clearSans.ttf")

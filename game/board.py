@@ -26,6 +26,16 @@ class Board:
         self.tileSpawn : int
         self.score     : int
         self.reset(rows, cols, tileSpawn)
+    
+    def reset(self, rows: int = 4, cols: int = 4, tileSpawn: int = 1) -> None:
+        ''' Reverts the game state to inital state and clears the board '''
+        self.rows      = rows
+        self.cols      = cols
+        self.board     = [[Tile(curr=(r, c)) for c in range(self.cols)] for r in range(self.rows)]
+        self.tileSpawn = tileSpawn
+        self.score     = 0
+        # Add starting tiles
+        self.spawn_tile(2)
 
 
     ########## ===== MERGING & MOVEMENT ===== ##########
@@ -239,17 +249,7 @@ class Board:
             for c in range(self.cols)
         )
     
-    def reset(self, rows: int = 4, cols: int = 4, tileSpawn: int = 1) -> None:
-        ''' Reverts the game state to inital state and clears the board '''
-        self.rows      = rows
-        self.cols      = cols
-        self.board     = [[Tile(curr=(r, c)) for c in range(self.cols)] for r in range(self.rows)]
-        self.tileSpawn = tileSpawn
-        self.score     = 0
-        # Add starting tiles
-        self.spawn_tile(2)
-
-
+    
     ########## =========== DEBUG ============ ##########
 
     def _printBoard(self) -> None:

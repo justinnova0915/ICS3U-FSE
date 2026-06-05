@@ -58,7 +58,7 @@ while running:
     ########## ========= UPDATE ========= ##########
     if state == State.GAME:
         ######## ========= INPUT ========== ########
-        if action in MOVE_ACTIONS and not animator.active: # Movement
+        if action in MOVE_ACTIONS: # Movement
             if board.tryMove(action):
                 board.spawn_tile()
             animator.startAnimation(board.board)
@@ -92,7 +92,7 @@ while running:
     ########## ========== DRAW ========== ##########
     screen.fill(BACKGROUND_COLOUR)
     renderer.draw(state, board, animator.get_animatedTiles())
-    
+
     pygame.display.set_caption(f"{clock.get_fps()}")
 
     ########## ======== DISPLAY ========= ##########

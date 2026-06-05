@@ -44,7 +44,7 @@ class Animator:
         if not self.active:
             return self.tiles
         self.elapsed  += dt
-        self.progress  = self._time_clamp(self.elapsed / ANIMATION_DURATION)
+        self.progress  = self._clamp(self.elapsed / ANIMATION_DURATION)
 
         if self.progress == 1:
             self.active = False
@@ -66,27 +66,34 @@ class Animator:
     def _animation_spawn(self, tile: Tile) -> None:
         tile.size = Vector((0, 0)).lerp(
             (CELL_SIZE), 
-            self._time_ease(self.progress)
+            self._timeMap_spawn(self.progress)
         )
         tile.pos = Vector(self._gridToPixel(*tile.curr)+(CELL_SIZE[0]/2, CELL_SIZE[1]/2)).lerp(
             self._gridToPixel(*tile.curr),
-            self._time_ease(self.progress)
+            self._timeMap_spawn(self.progress)
         )
 
     def _animation_move(self, tile: Tile) -> None:
         tile.pos = Vector(self._gridToPixel(*tile.prev)).lerp(
             self._gridToPixel(*tile.curr),
-            self._time_ease(self.progress)
+            self._timeMap_move(self.progress)
         )
+
 
     ########## ======== TIME MAPPING ======== ##########
 
-    def _time_clamp(self, t: float, lower: float = 0, upper: float = 1) -> float:
+    def _clamp(self, t: float, lower: float = 0, upper: float = 1) -> float:
         ''' Clamp t to a normalized value '''
         return min(upper, max(lower, t))
+    
+    def _timeMap_spawn(self, t: float) -> float:
+        ''' Time-mapping function for tile spawning '''
+        c1 = 2
+        c3 = c1 + 1.0
+        return 1.0 + c3 * ((t - 1.0) ** 3) + c1 * ((t - 1.0) ** 2)
 
-    def _time_ease(self, t: float) -> float:
-        ''' Time-mapping function '''
+    def _timeMap_move(self, t: float) -> float:
+        ''' Time-mapping function for tile moving '''
         c1 = 0.5
         c3 = c1 + 1.0
         return 1.0 + c3 * ((t - 1.0) ** 3) + c1 * ((t - 1.0) ** 2)

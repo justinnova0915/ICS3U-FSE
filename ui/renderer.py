@@ -1,21 +1,34 @@
+import json
+
 import pygame
 
 from    constants       import *
 from    game.board      import Board
 from    game.state      import State
 from    utils.tiles     import Tile
+from    ui.uiObject     import *
+
 
 class Renderer:
     ''' Class for rendering all surfaces onto the screen '''
     def __init__(self, screen: pygame.Surface, rows: int, cols: int) -> None:
         self.screen    = screen
+        self.uiSurf    = pygame.Surface((600, 250), pygame.SRCALPHA)
         self.boardSurf = pygame.Surface(self._get_board_size(rows, cols), pygame.SRCALPHA)
-        self.uiSurf    = pygame.Surface((800, 250), pygame.SRCALPHA)
+
+        self.uiObjects : dict[str, uiObject | uiScore] = {
+            "highscore" : uiScore((100, 40), "highscore"),
+            "score"     : uiScore((100, 40), "score"),
+        }
+        self.uiObjects_pos : dict[str, tuple[int, int]] = {
+            "highscore" : (475, 0),
+            "score"     : (325, 0),
+        }
 
         self.fontSurfaces = {
             key: pygame.font.Font(
                 FONT_FILENAME,
-                TILE_FONT_SIZE[key]
+                TILE_FONTSIZE[key]
             ).render(
                 str(key),
                 True,
@@ -25,7 +38,7 @@ class Renderer:
             )
             for key in TILE_KEYS if key != "default"
         }
-        self.fontDefault  = pygame.font.Font(FONT_FILENAME, TILE_FONT_SIZE["default"])
+        self.fontDefault  = pygame.font.Font(FONT_FILENAME, TILE_FONTSIZE["default"])
 
 
     ########## ============ DRAW ============ ##########
@@ -59,13 +72,13 @@ class Renderer:
         for r, c in [(r, c) for r in range(board.rows) for c in range(board.cols)]:
             pygame.draw.rect(
                 self.boardSurf,
-                BOARD_TILE_COLOUR,
+                CELL_COLOUR,
                 pygame.Rect(
                     c * (CELL_SIZE.w + CELL_PAD.w) + CELL_PAD.w,
                     r * (CELL_SIZE.h + CELL_PAD.h) + CELL_PAD.h,
                     *CELL_SIZE
                 ),
-                border_radius=BOARD_TILE_ROUND
+                border_radius=CELL_ROUND
             )
 
     def _render_board_tiles(self, tiles: list[Tile]) -> None:
@@ -79,7 +92,7 @@ class Renderer:
             rect = pygame.Rect(*tile.pos.to_int(), *tile.size)
             # Background
             colour = TILE_COLOURS.get(tile.value, TILE_COLOURS["default"])
-            pygame.draw.rect(self.boardSurf, colour, rect, border_radius=BOARD_TILE_ROUND)
+            pygame.draw.rect(self.boardSurf, colour, rect, border_radius=CELL_ROUND)
             # Text
             textSurf = self._get_textSurface(tile.value)
             textRect = textSurf.get_rect()
@@ -88,9 +101,13 @@ class Renderer:
 
     def _render_ui(self, score: int) -> None:
         ''' Renders all ui-related surfaces'''
-        # Scores
-        textSurf = self.fontDefault.render(str(score), True, TILE_FONT_SIZE["default"])
-        self.uiSurf.blit(textSurf, (100, 0))
+        pygame.draw.rect(self.uiSurf, (255, 0, 0), (0, 0, *self.uiSurf.get_size()), 2)
+        # Render individual surfaces
+        self.uiObjects["score"].render(score)
+        self.uiObjects["highscore"].render(HIGHSCORE)
+        # Blit individual surfaces onto main surf
+        for name in self.uiObjects.keys():
+            self.uiSurf.blit(self.uiObjects[name].surf, self.uiObjects_pos[name])
 
     def _get_textSurface(self, value: int) -> pygame.Surface:
         ''' Renders the number surface of tiles'''
@@ -105,7 +122,7 @@ class Renderer:
         self._resize_board(board.rows, board.cols)
 
     def _resize_board(self, rows: int, cols: int) -> None:
-        self.boardsurf = pygame.Surface(self.get_board_size(rows, cols), pygame.SRCALPHA)
+        self.boardsurf = pygame.Surface(self._get_board_size(rows, cols), pygame.SRCALPHA)
 
     def _get_board_size(self, rows: int, cols: int) -> Size:
         ''' Gets the size of the board surface '''
@@ -127,3 +144,4 @@ class Renderer:
         return Coord(
             (self.screen.get_width() - self.uiSurf.get_width()) // 2, 0
         )
+    
