@@ -6,23 +6,19 @@ from    constants       import *
 from    game.board      import Board
 from    game.state      import State
 from    utils.tiles     import Tile
-from    ui.uiObject     import *
+from    ui.uiObject     import uiObject, uiScore
 
 
 class Renderer:
     ''' Class for rendering all surfaces onto the screen '''
     def __init__(self, screen: pygame.Surface, rows: int, cols: int) -> None:
         self.screen    = screen
-        self.uiSurf    = pygame.Surface((600, 250), pygame.SRCALPHA)
+        self.uiSurf    = pygame.Surface((575, 250), pygame.SRCALPHA)
         self.boardSurf = pygame.Surface(self._get_board_size(rows, cols), pygame.SRCALPHA)
 
         self.uiObjects : dict[str, uiObject | uiScore] = {
-            "highscore" : uiScore((100, 40), "highscore"),
-            "score"     : uiScore((100, 40), "score"),
-        }
-        self.uiObjects_pos : dict[str, tuple[int, int]] = {
-            "highscore" : (475, 0),
-            "score"     : (325, 0),
+            "score"     : uiScore((125, 60), (316, 0), "SCORE"),
+            "highscore" : uiScore((125, 60), (450, 0), "BEST" ),
         }
 
         self.fontSurfaces = {
@@ -54,7 +50,7 @@ class Renderer:
         self._render_ui(board.score)
         # Blit surfaces
         self.screen.blit(self.boardSurf, self._get_board_pos())
-        self.screen.blit(self.uiSurf, self._get_ui_pos())
+        self.screen.blit(self.uiSurf, self._get_ui_pos())            
     
 
     ########## =========== RENDER =========== ##########
@@ -107,7 +103,7 @@ class Renderer:
         self.uiObjects["highscore"].render(HIGHSCORE)
         # Blit individual surfaces onto main surf
         for name in self.uiObjects.keys():
-            self.uiSurf.blit(self.uiObjects[name].surf, self.uiObjects_pos[name])
+            self.uiSurf.blit(self.uiObjects[name].surf, self.uiObjects[name].pos)
 
     def _get_textSurface(self, value: int) -> pygame.Surface:
         ''' Renders the number surface of tiles'''

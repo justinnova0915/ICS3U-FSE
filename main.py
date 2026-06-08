@@ -93,7 +93,7 @@ while running:
     screen.fill(BACKGROUND_COLOUR)
     renderer.draw(state, board, animator.get_animatedTiles())
 
-    pygame.display.set_caption(f"{clock.get_fps()}")
+    pygame.display.set_caption(f"{clock.get_fps():.0f}")
 
     ########## ======== DISPLAY ========= ##########
     pygame.display.flip()

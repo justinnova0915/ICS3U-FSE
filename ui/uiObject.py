@@ -6,62 +6,64 @@ from   constants import *
 
 
 def centerRect(
-        selfRect:  pygame.Rect | tuple[int, int, int, int],
+        selfSize: tuple[int, int],
         otherRect: pygame.Rect | tuple[int, int, int, int]
     ) -> pygame.Rect:
 
-    centeredRect = pygame.Rect(selfRect)
+    centeredRect = pygame.Rect(0, 0, *selfSize)
     centeredRect.center = pygame.Rect(otherRect).center
     return centeredRect
 
 
 class uiObject:
-    def __init__(self, size: tuple[int, int] | Size):
-        self.size : Size
+    def __init__(self, size: tuple[int, int] | Size, pos: tuple[int, int] | Coord):
         self.surf : pygame.Surface
-        self.resize(size)
+        self.size : Size
+        self.pos  : Coord
+        self.transform(size, pos)
 
-    def resize(self, size: tuple[int, int] | Size) -> None:
-        self.size = Size(*size)
+    def transform(self, size: tuple[int, int] | Size, pos: tuple[int, int] | Coord | None = None) -> None:
         self.surf = pygame.Surface(size, pygame.SRCALPHA)
+        self.size = Size(*size)
+        if pos is not None: self.pos = Coord(*pos)
 
     def render(self) -> None:
         ...
 
 class uiScore(uiObject):
-    def __init__(self, size: tuple[int, int] | Size, title: str):
-        super().__init__(size)
+    def __init__(self, size: tuple[int, int] | Size, pos: tuple[int, int] | Coord, title: str):
+        super().__init__(size, pos)
         self.title = title
 
-        self.titleFont = pygame.font.Font(FONT_FILENAME, 10)
-        self.scoreFont = pygame.font.Font(FONT_FILENAME, 24)
+        self.titleFont = pygame.font.Font(FONT_FILENAME, 15)
+        self.scoreFont = pygame.font.Font(FONT_FILENAME, 30)
 
     def render(self, score: int) -> None:
         title_surf = self.titleFont.render(self.title, True, SCORE_COLOUR_TITLE)
         score_surf = self.scoreFont.render(str(score), True, SCORE_COLOUR_SCORE)
 
-        pygame.draw.rect(self.surf, SCORE_BGCOLOUR, (0, 0, *self.size), border_radius=int(min(self.size) * 0.2))
+        pygame.draw.rect(self.surf, SCORE_BGCOLOUR, (0, 0, *self.size), border_radius=5)
         self.surf.blit(
             title_surf,
             centerRect(
-                title_surf.get_rect(),
+                title_surf.get_size(),
                 (
                     0,
-                    0,
+                    self.size.h * 0,
                     self.size.w,
-                    self.size.h * 0.2
+                    self.size.h * 0.4
                 )
             )
         )
         self.surf.blit(
             score_surf,
             centerRect(
-                score_surf.get_rect(),
+                score_surf.get_size(),
                 (
                     0,
-                    self.size.h * 0.2,
+                    self.size.h * 0.3,
                     self.size.w,
-                    self.size.h * 0.8
+                    self.size.h * 0.6
                 )
             )
         )
