@@ -19,19 +19,18 @@ class Animator:
 
     ########## ===== CONFIG & RETRIEVAL ===== ##########
 
-    def startAnimation(self, board: list[list[Tile]]) -> None:
+    def startAnimation(self, board: list[Tile]) -> None:
         self.active  = True
         self.tiles   = []
         self.elapsed = 0
         self._set_tiles(board)
 
-    def _set_tiles(self, board: list[list[Tile]]) -> None:
+    def _set_tiles(self, board: list[Tile]) -> None:
         ''' Set up tile list for animation '''
-        for row in board: 
-            for tile in row:
-                tile.pos = Vector(self._gridToPixel(*tile.curr))
-                tile.size = Vector(CELL_SIZE)
-                self.tiles.append(tile)
+        for tile in board: 
+            tile.pos = Vector(self._gridToPixel(*tile.curr))
+            tile.size = Vector(CELL_SIZE)
+            self.tiles.append(tile)
     
     def get_animatedTiles(self) -> list[Tile]:
         return self.tiles
@@ -47,6 +46,7 @@ class Animator:
         self.progress  = self._clamp(self.elapsed / ANIMATION_DURATION)
 
         if self.progress == 1:
+            self.tiles = [tile for tile in self.tiles if not tile.merging]
             self.active = False
         
         for tile in self.tiles:

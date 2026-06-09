@@ -62,6 +62,7 @@ while running:
             if board.tryMove(action):
                 board.spawn_tile()
             animator.startAnimation(board.board)
+            board.cleanup()
             # Win | Lose gamestate
             if board.hasWon():
                 state = State.WIN

@@ -9,7 +9,7 @@ class Tile():
     prev:   tuple[int, int] = (-1, -1)
     pos:    Vector | None   = None
     value:  int             = 0
-    merged: bool            = False
+    merging: bool            = False
     size:   Vector | None   = None
 
     def __repr__(self):
