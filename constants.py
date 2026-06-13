@@ -83,7 +83,7 @@ TILE_TEXT_COLOURS = {
 
 ########## ========= CONSTANTS ========== ##########
 
-ANIMATION_DURATION = 0.15
+ANIMATION_DURATION = .15
 
 WIN_TILE = 2048
 
