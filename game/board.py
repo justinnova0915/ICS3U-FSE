@@ -178,12 +178,6 @@ class Board:
 
     ########## ======= WIN LOSS CHECK ======= ##########
 
-    def _get_board_values(self, board: list[list[Tile]] | None = None) -> list[list[int]]:
-        if board is None:
-            return [[tile.value for tile in row] for row in self.board]
-        else:
-            return [[tile.value for tile in row] for row in board]
-
     def hasLegalMove(self) -> bool:
         ''' Checks if any moves are possible without altering the board '''
 
@@ -211,6 +205,9 @@ class Board:
         return False                
     
     ########## =========== DEBUG ============ ##########
+
+    def _get_board_values(self, board: list[Tile]) -> list[int]:
+        return [tile.value for tile in self.board]
 
     def _print_board(self) -> None:
         ''' Debug function for printing the flat-list board layout '''

@@ -2,11 +2,12 @@ import json
 
 import pygame
 
-from    constants       import *
-from    game.board      import Board
-from    game.state      import State
-from    utils.tiles     import Tile
-from    ui.uiObject     import uiObject, uiScore
+from   constants        import *
+from   utils.namedpair  import Size, Coord
+from   game.board       import Board
+from   game.state       import State
+from   utils.tiles      import Tile
+from   ui.uiObject      import uiObject, uiScore
 
 
 class Renderer:

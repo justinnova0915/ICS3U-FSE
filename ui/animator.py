@@ -9,7 +9,7 @@ from constants      import *
 
 class Animator:
     ''' Class for bridging board coordinates to pixel coordinates '''
-    def __init__(self, board: list[list[Tile]]):
+    def __init__(self, board: list[Tile]):
         self.elapsed:  float      = 0
         self.progress: float      = 0
         self.active:   bool       = False
