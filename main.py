@@ -7,7 +7,6 @@ import json
 import pygame
 
 from   constants        import *
-from   utils.namedpair  import Size, Coord
 from   game.board       import Board
 from   game.state       import State
 from   ui.renderer      import Renderer
@@ -21,29 +20,29 @@ SCREEN_FLAGS = pygame.RESIZABLE
 screen = pygame.display.set_mode(SCREEN_SIZE, SCREEN_FLAGS)
 pygame.display.set_caption("2048")
 
-state = State.GAME
 clock = pygame.time.Clock()
 MAX_FPS  = 60
 DT_STEP  = 1 / MAX_FPS
 DT_MAX   = 0.5
 dt_accum = 0
 
-TIMER = 2
-
-########## ========== MODULES =========== ##########
+state    = State.GAME
 board    = Board()
 animator = Animator(board.board)
 renderer = Renderer(screen, board.rows, board.cols, state)
 
+def reset():
+    global state, board, animator, renderer
+    state    = State.GAME
+    board    = Board()
+    animator = Animator(board.board)
+    renderer = Renderer(screen, board.rows, board.cols, state)
+
+with open(pathJoin(ROOT_PATH, "data", "highscore.json")) as file:
+    highscore = json.load(file)["highscore"]
+
+
 ########## ========= GAME LOOP ========== ##########
-
-def restart():
-    global state
-    board.reset()
-    animator.startAnimation(board.board)
-    board.cleanup()
-    state = State.GAME
-
 running = True
 while running:
 
@@ -63,11 +62,19 @@ while running:
     
     ########## ========= UPDATE ========= ##########
     if state == State.GAME:
-        ######## ========= INPUT ========== ########
         if action in MOVE_ACTIONS: # Movement
-            if board.tryMove(action):
+            # Move board and spawn tile
+            board.move(action)
+            if board.moved:
                 board.spawn_tile()
+            # Check to update highscore
+            if board.score > highscore:
+                highscore = board.score
+                with open(pathJoin(ROOT_PATH, "data", "highscore.json"), 'w') as file:
+                    json.dump({"highscore" : highscore}, file, indent=4)
+            # Setup for animation
             animator.startAnimation(board.board)
+            # Remove extra 'merging' tiles
             board.cleanup()
             # Win | Lose gamestate
             if board.hasWon():
@@ -76,9 +83,7 @@ while running:
                 state = State.LOSE
 
         if action == "newGame": # New game
-            board.reset()
-
-        ######## ========= UPDATE ========= ########
+            reset()
 
     elif state == State.WIN:
         if action == "new_game":
@@ -100,7 +105,7 @@ while running:
     ########## ========== DRAW ========== ##########
     screen.fill(BACKGROUND_COLOUR)
     animator.update(dt)
-    renderer.draw(state, board, animator.get_animatedTiles(), restart)
+    renderer.render(state, board, animator.get_animatedTiles(), highscore, reset)
 
     pygame.display.set_caption(f"{clock.get_fps():.0f}")
 

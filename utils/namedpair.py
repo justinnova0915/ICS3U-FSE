@@ -1,6 +1,5 @@
 from   functools        import wraps
 from   collections.abc  import Sequence, Iterable
-from   typing           import overload, TypeVar, Self
 
 def _coerce_pair(value : Iterable[int | float]) -> tuple[int, int]:    
     # Type check

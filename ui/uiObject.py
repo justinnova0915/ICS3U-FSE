@@ -2,8 +2,9 @@ from   collections.abc import Iterable
 
 import pygame
 
-from   constants       import *
-from   utils.namedpair import Size, Coord
+from   constants        import *
+from   utils.namedpair  import Size
+from   utils.vector     import Coord
 
 
 def centerRect(
@@ -16,7 +17,7 @@ def centerRect(
     return centeredRect
 
 
-class uiObject:
+class UIObject:
     def __init__(self, size: tuple[int, int] | Size, pos: tuple[int, int] | Coord):
         self.surf : pygame.Surface
         self.size : Size
@@ -31,12 +32,12 @@ class uiObject:
     def render(self) -> None:
         ...
 
-class uiScore(uiObject):
-    def __init__(self, size: tuple[int, int] | Size, pos: tuple[int, int] | Coord, title: str, width: int=0):
+class UIScore(UIObject):
+    def __init__(self, size: tuple[int, int] | Size, pos: tuple[int, int] | Coord, title: str, border: bool = False):
         super().__init__(size, pos)
         self.title = title
 
-        self.width     = width
+        self.width     = 2 if border else 0
         self.borderRad = 15
 
         self.titleFont = pygame.font.Font(FONT_FILENAME, 15)
@@ -88,3 +89,6 @@ class uiScore(uiObject):
                 )
             )
         )
+
+class AnimatedUIObject(UIObject):
+    def __init__(self, size: tuple[int, int] | Size, sPos)

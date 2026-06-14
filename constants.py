@@ -1,7 +1,4 @@
-import json
 from   pathlib     import Path
-from   dataclasses import dataclass
-from   collections import namedtuple
 
 from   utils.namedpair  import Size, Coord
 
@@ -48,32 +45,32 @@ TILE_FONTSIZE_MEDIUM = 46   # 128, 256, 512
 TILE_FONTSIZE_SMALL  = 36   # 1024, 2048+
 
 TILE_FONTSIZE = {
-    2:    TILE_FONTSIZE_LARGE,
-    4:    TILE_FONTSIZE_LARGE,
-    8:    TILE_FONTSIZE_LARGE,
-    16:   TILE_FONTSIZE_LARGE,
-    32:   TILE_FONTSIZE_LARGE,
-    64:   TILE_FONTSIZE_LARGE,
-    128:  TILE_FONTSIZE_MEDIUM,
-    256:  TILE_FONTSIZE_MEDIUM,
-    512:  TILE_FONTSIZE_MEDIUM,
-    1024: TILE_FONTSIZE_SMALL,
-    2048: TILE_FONTSIZE_SMALL,
+    2:         TILE_FONTSIZE_LARGE,
+    4:         TILE_FONTSIZE_LARGE,
+    8:         TILE_FONTSIZE_LARGE,
+    16:        TILE_FONTSIZE_LARGE,
+    32:        TILE_FONTSIZE_LARGE,
+    64:        TILE_FONTSIZE_LARGE,
+    128:       TILE_FONTSIZE_MEDIUM,
+    256:       TILE_FONTSIZE_MEDIUM,
+    512:       TILE_FONTSIZE_MEDIUM,
+    1024:      TILE_FONTSIZE_SMALL,
+    2048:      TILE_FONTSIZE_SMALL,
     "default": TILE_FONTSIZE_SMALL,
 }
 
 TILE_COLOURS = {
-    2:    (238, 228, 218),
-    4:    (237, 224, 200),
-    8:    (242, 177, 121),
-    16:   (245, 149, 99 ),
-    32:   (246, 124, 95 ),
-    64:   (246, 90,  60 ),
-    128:  (237, 207, 114),
-    256:  (237, 204, 97 ),
-    512:  (237, 200, 80 ),
-    1024: (237, 197, 63 ),
-    2048: (237, 194, 46 ),
+    2:         (238, 228, 218),
+    4:         (237, 224, 200),
+    8:         (242, 177, 121),
+    16:        (245, 149, 99 ),
+    32:        (246, 124, 95 ),
+    64:        (246, 90,  60 ),
+    128:       (237, 207, 114),
+    256:       (237, 204, 97 ),
+    512:       (237, 200, 80 ),
+    1024:      (237, 197, 63 ),
+    2048:      (237, 194, 46 ),
     "default": (60, 58, 50),  # for tiles beyond 2048
 }
 
@@ -85,13 +82,10 @@ TILE_TEXT_COLOURS = {
 
 ########## ========= CONSTANTS ========== ##########
 
-ANIMATION_DURATION = .20
+ANIMATION_DURATION = 0.20
 
 WIN_TILE = 2048
 
 MOVE_ACTIONS = ["left", "right", "up", "down"]
-
-with open(pathJoin(ROOT_PATH, "data", "highscore.json")) as file:
-    HIGHSCORE = json.load(file)["highscore"]
 
 FONT_FILENAME = pathJoin(ROOT_PATH, "assets", "clearSans.ttf")

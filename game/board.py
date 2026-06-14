@@ -13,38 +13,23 @@ class Board:
         Initialize the Board object  
         Customization is supported. Default size 4x4, +1 tile / move
         '''
-        self.rows      : int
-        self.cols      : int
-        self.board     : list[Tile]
-        self.moves     : int
-        ''' Dict of all the directions with their respective functions '''
-        self.move_dir = {
-            "left": (0, -1),
-            "right": (0, 1),
-            "up": (-1, 0),
-            "down": (1, 0)
-        }
-        self.tileSpawn : int
-        self.score     : int
-        self.moved     : bool
-        self.reset(rows, cols, tileSpawn)
-    
-    def reset(self, rows: int = 4, cols: int = 4, tileSpawn: int = 1) -> None:
-        ''' Reverts the game state to inital state and clears the board '''
-        self.rows      = rows
-        self.cols      = cols
-        self.board     = []
-        self.tileSpawn = tileSpawn
-        self.score     = 0
-        self.moved     = False
-        self.moves     = 0
-        # Add starting tiles
-        self.spawn_tile(2)
+        self.rows      : int        = rows      # Number of rows
+        self.cols      : int        = cols      # Number of columns
+        self.board     : list[Tile] = []        # List of non-null tiles
+
+        self.moved     : bool       = False     # Bool to check if spawned
+        # Dict of all the directions with their respective movements
+        self.move_dir = {"left": (0, -1), "right": (0, 1), "up": (-1, 0), "down": (1, 0)}
+
+        self.tileSpawn : int        = tileSpawn # Number of tiles to spawn
+        self.score     : int        = 0         # Total score
+        self.moves     : int        = 0         # Number of moves made
+        self.spawn_tile(num=2, addPoints=False)
 
 
     ########## ===== MERGING & MOVEMENT ===== ##########
 
-    def _sort_board(self, direction: str):
+    def _sortBoard(self, direction: str):
         
         match direction:
             case "left":
@@ -56,10 +41,13 @@ class Board:
             case "down":
                 self.board.sort(key=lambda tile: tile.curr[0], reverse=True)
             
-    def _search_board(self, index: tuple[int, int]):
-        return next((t for t in self.board if t.curr == index and t.value > 0), None)
+    def _searchBoard(self, index: tuple[int, int]) -> Tile | None:
+        for tile in self.board:
+            if tile.curr == index:
+                return tile
+        return None
 
-    def _move_board(self, direction: str) -> None:
+    def _moveBoard(self, direction: str) -> None:
         '''
         Base logic for merging  
         Checks for adjacent pairs of the same value in the row, then merges them  
@@ -68,7 +56,7 @@ class Board:
         for tile in self.board:
             tile.merging = False
 
-        self._sort_board(direction)
+        self._sortBoard(direction)
         self.moved = False
 
         # Loop through each tile
@@ -86,7 +74,7 @@ class Board:
                 # check if the coord is even in range (hit the bounds)
                 if 0 <= next_r < self.rows and 0 <= next_c < self.cols:
                     # See if there is already a tile there
-                    adj = self._search_board((next_r, next_c))
+                    adj = self._searchBoard((next_r, next_c))
                     # if there is
                     if adj:
                         # 1. Already merged in this step, can;t merge again
@@ -120,10 +108,10 @@ class Board:
                     break
 
 
-    def tryMove(self, direction: str) -> bool: # Did a move happen?
+    def move(self, direction: str) -> None:
         ''' Exposed endpoint for moving provided a direction '''
         oldBoard = copy.deepcopy(self.board)
-        self._move_board(direction)
+        self._moveBoard(direction)
 
         # Don't update if no move
         if self.moved:
@@ -138,7 +126,7 @@ class Board:
     
     def _get_tile(self, row: int, col: int) -> Tile:
         ''' Gets the tile at a specific index '''
-        return self._search_board((row, col))
+        return self._searchBoard((row, col))
     
     def _get_value(self, row: int, col: int) -> int:
         ''' Gets the tile at a specific index '''
@@ -167,19 +155,22 @@ class Board:
 
     ########## ========= SPAWN TILE ========= ##########
 
-    def _get_empty_tiles(self) -> list[tuple[int, int]]:
+    def _get_emptyTiles(self) -> list[tuple[int, int]]:
         ''' Returns all the cells that has no numbers in it '''
-        return [(r, c) for r in range(self.rows) for c in range(self.cols) if self._search_board((r, c)) == None]
+        return [(r, c) for r in range(self.rows) for c in range(self.cols) if self._searchBoard((r, c)) == None]
 
-    def spawn_tile(self, num: int = 1) -> None:
+    def spawn_tile(self, num: int = 1, addPoints: bool = True) -> None:
         ''' Spawns new tiles at random empty spaces '''
-        empty = self._get_empty_tiles()
+        empty = self._get_emptyTiles()
         for _ in range(num):
             if not empty: return # Stop if no empty tiles
             randomIndex = choice(empty)
             val = 4 if random() < 0.1 else 2
             # Add new tile
             self._set_tile(*randomIndex, val)
+            # Add score of new tile
+            if addPoints:
+                self.score += val
             # Remove index from empty indexes
             empty.remove(randomIndex)
 
@@ -212,10 +203,29 @@ class Board:
                 return True
         return False                
     
+
+    ########## ========== POWERUPS ========== ##########
+
+
     ########## =========== DEBUG ============ ##########
 
-    def _get_board_values(self, board: list[Tile]) -> list[int]:
-        return [tile.value for tile in self.board]
+    def _get_boardValues(self) -> list[list[int]]:
+        values = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
+        for r in range(self.rows):
+            for c in range(self.cols):
+                tile = self._searchBoard(r, c)
+                if tile is not None:
+                    values[r][c] = tile.value
+        return values
+
+    def _set_boardValues(self, values: list[list[int]]) -> None:
+        self.board = [
+            Tile((r, c), value=values[r][c])
+            
+            for r in range(len(values))
+                for c in range(len(values[r]))
+                    if values[r][c] != 0
+        ]
 
     def _print_board(self) -> None:
         ''' Debug function for printing the flat-list board layout '''

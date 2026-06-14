@@ -12,9 +12,9 @@ from    math            import isclose, sqrt, acos
 ########## ########## ========= UTILITIES ========== ########## ##########
 ########## ########## ==============  ============== ########## ##########
 
-def _coerce_xy(value : Iterable[int | float] | Vector) -> tuple[float, float]:
+def _coerce_xy(value : Iterable[int | float] | Coord) -> tuple[float, float]:
     # Vector
-    if isinstance(value, Vector):
+    if isinstance(value, Coord):
         return value.x, value.y
     
     # Type check
@@ -35,12 +35,12 @@ def _coerce_xy(value : Iterable[int | float] | Vector) -> tuple[float, float]:
     # Return components as floats
     return float(x), float(y)
 
-def _coerce_vector(value : Iterable[int | float] | Vector) -> Vector:
-    if isinstance(value, Vector):
+def _coerce_vector(value : Iterable[int | float] | Coord) -> Coord:
+    if isinstance(value, Coord):
         return value
     
     x, y = _coerce_xy(value)
-    return Vector(x, y)
+    return Coord(x, y)
 
 def _coerce_scalar(scalar : float | int):
     if isinstance(scalar, (int, float)):
@@ -59,7 +59,7 @@ def _assert_nonZeroMag(mag):
 def coerce_xy_otherVector(method):
     @wraps(method)
 
-    def wrapper(self, other : Vector | Iterable[float]):
+    def wrapper(self, other : Coord | Iterable[float]):
         try:
             ox, oy = _coerce_xy(other)
         except (TypeError, ValueError):
@@ -72,9 +72,9 @@ def coerce_xy_otherVector(method):
 def coerce_vector_otherVector(method):
     @wraps(method)
     
-    def wrapper(self, other : Vector | Iterable[float]):
+    def wrapper(self, other : Coord | Iterable[float]):
         try:
-            other_vec = Vector(_coerce_vector(other))
+            other_vec = Coord(_coerce_vector(other))
         except (TypeError, ValueError):
             return NotImplemented
         
@@ -119,7 +119,7 @@ def coerce_scalar(method):
 ########## ########## ======== VECTOR CLASS ======== ########## ##########
 ########## ########## ==============  ============== ########## ##########
 
-class Vector:
+class Coord:
 
     ########## ==============  ============== ##########
     ########## ======= INITIALIZATION ======= ##########
@@ -317,11 +317,11 @@ class Vector:
         ########## ==========  ========== ##########
 
     @coerce_vector_otherVector
-    def distanceTo(self, other : Vector | Iterable[float]) -> float:
+    def distanceTo(self, other : Coord | Iterable[float]) -> float:
         return (other - self).magnitude
     
     @coerce_vector_otherVector
-    def distanceTo_squared(self, other : Vector | Iterable[float]) -> float:
+    def distanceTo_squared(self, other : Coord | Iterable[float]) -> float:
         return (other - self).magnitude_squared
 
         ########## ==========  ========== ##########
@@ -406,7 +406,7 @@ class Vector:
         ########## ==========  ========== ##########
 
     @coerce_scalar
-    def clamp(self, mag : int | float) -> Vector:
+    def clamp(self, mag : int | float) -> Coord:
         if self.magnitude > mag:
             return self.normalized(mag)
         return self.copy()

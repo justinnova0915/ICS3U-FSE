@@ -1,14 +1,12 @@
-import json
-
-import pygame
+import  pygame
 
 from    constants       import *
 from    utils.namedpair import Size, Coord
-from    game.board      import Board
-from    game.state      import State
-from    utils.tiles     import Tile
-from    ui.uiObject     import uiObject, uiScore
 from    utils.lerp      import animate
+from    ui.uiObject     import UIObject, UIScore
+from    game.state      import State
+from    game.board      import Board
+from    utils.tiles     import Tile
 
 
 class Renderer:
@@ -21,9 +19,9 @@ class Renderer:
         self.restartSurf: pygame.Surface
         self.state = state
 
-        self.uiObjects : dict[str, uiObject | uiScore] = {
-            "score"     : uiScore((125, 60), (150, 50), "SCORE"),
-            "highscore" : uiScore((125, 60), (300, 50), "BEST"  ),
+        self.uiObjects : dict[str, UIObject | UIScore] = {
+            "score"     : UIScore((125, 60), (150, 50), "SCORE"),
+            "highscore" : UIScore((125, 60), (300, 50), "BEST", border=True),
         }
 
         self.win_anim_t = 0.0
@@ -57,15 +55,24 @@ class Renderer:
 
     ########## ============ DRAW ============ ##########
 
-    def draw(self, state: State, board: Board, tiles: list[Tile], on_click) -> None:
+    def render(self, state: State, board: Board, tiles: list[Tile], highscore: int, on_click) -> None:
         ''' Blits all surfaces onto the screen '''
         # Clear background
         self.screen.fill(BACKGROUND_COLOUR)
         self.boardSurf.fill((0, 0, 0, 0))
-        self.uiSurf.fill((0, 0, 0, 0))
+        self.uiSurf   .fill((0, 0, 0, 0))
         # Render surfaces
-        self._render_board(board, tiles)
-        self._render_ui(board.score, board.moves, state, on_click)
+        match state:
+            case State.MENU:
+                ...
+            case State.GAME:
+                self._renderUi_GAME(board.score, highscore)
+                self._renderBoard_GAME(board, tiles)
+            case State.WIN:
+                ...
+            case State.LOSE:
+                self._renderUi_LOSE(board.score, board.moves, on_click)
+                self._renderBoard_LOSE(board, tiles)
         # Blit surfaces
         self.screen.blit(self.boardSurf, self._get_board_pos())
         self.screen.blit(self.uiSurf, self._get_ui_pos())            
@@ -73,12 +80,17 @@ class Renderer:
 
     ########## =========== RENDER =========== ##########
 
-    def _render_board(self, board: Board, tiles: list[Tile]):
-        ''' Renders all board-related surfaces'''
-        self._render_board_base(board)
-        self._render_board_tiles(tiles)
+    def _renderBoard_GAME(self, board: Board, tiles: list[Tile]):
+        ''' Renders the board for 'GAME' state '''
+        self._renderBoard_base(board)
+        self._renderBoard_tiles(tiles)
 
-    def _render_board_base(self, board: Board) -> None:
+    def _renderBoard_LOSE(self, board: Board, tiles: list[Tile]):
+        ''' Renders the board for 'LOSE' state '''
+        self._renderBoard_base(board)
+        self._renderBoard_tiles(tiles)
+
+    def _renderBoard_base(self, board: Board) -> None:
         ''' Renders the base board '''
         # Background
         pygame.draw.rect(self.boardSurf, BOARD_COLOUR, self.boardSurf.get_rect(), border_radius=BOARD_ROUND)
@@ -95,12 +107,12 @@ class Renderer:
                 border_radius=CELL_ROUND
             )
 
-    def _render_board_tiles(self, tiles: list[Tile]) -> None:
+    def _renderBoard_tiles(self, tiles: list[Tile]) -> None:
         ''' Renders the tiles on top of the board'''
         for tile in tiles:
-            self._render_board_tile(tile)
+            self._renderBoard_tile(tile)
     
-    def _render_board_tile(self, tile: Tile) -> None:
+    def _renderBoard_tile(self, tile: Tile) -> None:
         ''' Renders individual tiles on top of the board'''
         if tile.value != 0:
             rect = pygame.Rect(*tile.pos.to_int(), *tile.size)
@@ -111,28 +123,30 @@ class Renderer:
             textSurf = self._get_textSurface(tile.value)
             textRect = textSurf.get_rect()
             textRect.center = rect.center
-            self.boardSurf.blit(textSurf, textRect)
+            self.boardSurf.blit(textSurf, textRect)        
 
-    def _render_ui(self, score: int, moves: int, state: State, on_click) -> None:
-        # if state == State.GAME:
-            ''' Renders all ui-related surfaces'''
-            # Render individual surfaces
-            self.uiObjects["score"].render(score)
-            self.uiObjects["highscore"].render(HIGHSCORE)
-            # Blit individual surfaces onto main surf
-            for name in self.uiObjects.keys():
-                self.uiSurf.blit(self.uiObjects[name].surf, self.uiObjects[name].pos)
-        # else:
-        #     self._render_win(score, moves, on_click)
+    def _renderUi_MENU(self) -> None: ...
+
+    def _renderUi_GAME(self, score: int, highscore: int) -> None:
+        ''' Renders the ui for 'GAME' state '''
+        # Render individual surfaces
+        self.uiObjects["score"].render(score)
+        self.uiObjects["highscore"].render(highscore)
+        # Blit individual surfaces onto main surf
+        for name in self.uiObjects.keys():
+            self.uiSurf.blit(self.uiObjects[name].surf, self.uiObjects[name].pos)
+
+    def _renderUi_WIN(self) -> None: ...
     
-    def _render_win(self, score: int, moves: int, on_click) -> None:
+    def _renderUi_LOSE(self, score: int, moves: int, on_click) -> None:
+        ''' Renders the ui for 'LOSE' state '''
         if self.win_anim_t < 1.0:
             self.win_anim_t += 0.04
             if self.win_anim_t > 1.0:
                 self.win_anim_t = 1.0
 
         gameOverText = self.gameOverFont.render("Game Over", True, (156, 137, 121))
-        scoreText = self.scoreFont.render(f"{score} points scored in {moves} moves.", True, (156, 137, 121))
+        scoreText = self.scoreFont.render(f"You scored {score} points in {moves} moves.", True, (156, 137, 121))
         restartText = self.restartTextFont.render("Play Again", True, (156, 137, 121))
 
         restartButton_x = 250
@@ -163,6 +177,7 @@ class Renderer:
         self.screen.blit(*animate(self.win_anim_t, gameOverText, (SCREEN_SIZE.w / 2, gameOver_y), (SCREEN_SIZE.w / 2, gameOver_Target_y)))
         self.screen.blit(*animate(self.win_anim_t, scoreText, (SCREEN_SIZE.w / 2, score_start_y), (SCREEN_SIZE.w / 2, score_target_y)))
         self.screen.blit(*animate(self.win_anim_t, self.restartSurf, (SCREEN_SIZE.w / 2, restart_start_y), (SCREEN_SIZE.w / 2, restart_target_y)))
+
 
     def _get_textSurface(self, value: int) -> pygame.Surface:
         ''' Renders the number surface of tiles'''
@@ -199,4 +214,3 @@ class Renderer:
         return Coord(
             (self.screen.get_width() - self.uiSurf.get_width()) // 2, 0
         )
-    
