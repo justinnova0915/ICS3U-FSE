@@ -39,6 +39,8 @@ renderer = Renderer(screen, board.rows, board.cols, state)
 def restart():
     global state
     board.reset()
+    animator.startAnimation(board.board)
+    board.cleanup()
     state = State.GAME
 
 running = True
