@@ -16,6 +16,7 @@ class Board:
         self.rows      : int
         self.cols      : int
         self.board     : list[Tile]
+        self.moves     : int
         ''' Dict of all the directions with their respective functions '''
         self.move_dir = {
             "left": (0, -1),
@@ -36,6 +37,7 @@ class Board:
         self.tileSpawn = tileSpawn
         self.score     = 0
         self.moved     = False
+        self.moves     = 0
         # Add starting tiles
         self.spawn_tile(2)
 
@@ -55,7 +57,7 @@ class Board:
                 self.board.sort(key=lambda tile: tile.curr[0], reverse=True)
             
     def _search_board(self, index: tuple[int, int]):
-        return next((t for t in self.board if t.curr == index and t.value > 0 and not t.merging), None)
+        return next((t for t in self.board if t.curr == index and t.value > 0), None)
 
     def _move_board(self, direction: str) -> None:
         '''
@@ -63,6 +65,8 @@ class Board:
         Checks for adjacent pairs of the same value in the row, then merges them  
         Note: this method merges leftwards
         '''
+        for tile in self.board:
+            tile.merging = False
 
         self._sort_board(direction)
         self.moved = False
@@ -70,6 +74,8 @@ class Board:
         # Loop through each tile
         for tile in self.board:
             # Record the pos now as prev before moving
+            if tile.prev == (-1, -1) and tile.merging:
+                break
             tile.prev = tile.curr
 
             while True:
@@ -83,28 +89,32 @@ class Board:
                     adj = self._search_board((next_r, next_c))
                     # if there is
                     if adj:
-                        # 1. check if a merge can happen
-                        if adj.value == tile.value:
+                        # 1. Already merged in this step, can;t merge again
+                        if adj.merging:
+                            break
+                        # 2. check if its a blocking tile
+                        elif adj.value != tile.value:
+                            break
+                        # 3. check if a merge can happen
+                        elif adj.value == tile.value:
                             # if so, update the value and pos
                             adj.merging = True
                             tile.merging = True
                             tile.curr = (next_r, next_c)
-                            self.board.insert(0, Tile(
+                            self.board.append(Tile(
                                 (next_r, next_c),
-                                value=tile.value*2
+                                value=tile.value*2,
+                                merging=True
                             ))
                             self.moved = True
-                            break
-                        # 3. check if its a blocking tile
-                        elif adj.value != tile.value:
-                            break
-                        # 4. Already merged in this step, can;t merge again
-                        elif adj.merging:
+                            self.score += tile.value*2
+                            self.moves += 1
                             break
                     # if is none, then its an empty spot. move into it
                     else:
                         tile.curr = (next_r, next_c)
                         self.moved = True
+                        self.moves += 1
 
                 else:
                     break
@@ -121,9 +131,7 @@ class Board:
         return False
     
     def cleanup(self):
-        for tile in self.board:
-            if tile.merging:
-                self.board.remove(tile)
+        self.board = [tile for tile in self.board if not(tile.merging and tile.prev != (-1, -1))]
 
 
     ########## ============ TILE ============ ##########

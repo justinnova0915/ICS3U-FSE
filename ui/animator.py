@@ -46,7 +46,7 @@ class Animator:
         self.progress  = self._clamp(self.elapsed / ANIMATION_DURATION)
 
         if self.progress == 1:
-            self.tiles = [tile for tile in self.tiles if not tile.merging]
+            self.tiles = [tile for tile in self.tiles if not(tile.merging and tile.prev != (-1, -1))]
             self.active = False
         
         for tile in self.tiles:
