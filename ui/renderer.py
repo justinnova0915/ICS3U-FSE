@@ -3,6 +3,7 @@ import json
 import pygame
 
 from    constants       import *
+from    utils.namedpair import Size, Coord
 from    game.board      import Board
 from    game.state      import State
 from    utils.tiles     import Tile

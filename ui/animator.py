@@ -9,7 +9,7 @@ from constants      import *
 
 class Animator:
     ''' Class for bridging board coordinates to pixel coordinates '''
-    def __init__(self, board: list[list[Tile]]):
+    def __init__(self, board: list[Tile]):
         self.elapsed:  float      = 0
         self.progress: float      = 0
         self.active:   bool       = False
@@ -68,7 +68,7 @@ class Animator:
             (CELL_SIZE), 
             self._timeMap_spawn(self.progress)
         )
-        tile.pos = Vector(self._gridToPixel(*tile.curr)+(CELL_SIZE[0]/2, CELL_SIZE[1]/2)).lerp(
+        tile.pos = Vector(self._gridToPixel(*tile.curr)+(CELL_SIZE//2)).lerp(
             self._gridToPixel(*tile.curr),
             self._timeMap_spawn(self.progress)
         )

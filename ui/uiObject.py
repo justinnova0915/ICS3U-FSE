@@ -2,7 +2,8 @@ from   collections.abc import Iterable
 
 import pygame
 
-from   constants import *
+from   constants       import *
+from   utils.namedpair import Size, Coord
 
 
 def centerRect(

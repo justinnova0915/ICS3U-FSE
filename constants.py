@@ -3,6 +3,8 @@ from   pathlib     import Path
 from   dataclasses import dataclass
 from   collections import namedtuple
 
+from   utils.namedpair  import Size, Coord
+
 ROOT_PATH = str(Path(__file__).parent)
 
 def pathJoin(root: str | Path, path: str, *args) -> str:
@@ -10,9 +12,6 @@ def pathJoin(root: str | Path, path: str, *args) -> str:
     for p in args:
         res = res / p
     return str(res)
-
-Coord    = namedtuple("Coord",      ['x', 'y'])
-Size     = namedtuple("Size",       ['w', 'h'])
 
 SCREEN_SIZE  = Size(900, 1000)
 
