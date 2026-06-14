@@ -34,17 +34,34 @@ class uiScore(uiObject):
     def __init__(self, size: tuple[int, int] | Size, pos: tuple[int, int] | Coord, title: str, width: int=0):
         super().__init__(size, pos)
         self.title = title
-        self.width = width
+
+        self.width     = width
+        self.borderRad = 15
 
         self.titleFont = pygame.font.Font(FONT_FILENAME, 15)
         self.scoreFont = pygame.font.Font(FONT_FILENAME, 30)
 
     def render(self, score: int) -> None:
+        # Cache text surfaces
         title_surf = self.titleFont.render(self.title, True, SCORE_COLOUR_TITLE)
         score_surf = self.scoreFont.render(str(score), True, SCORE_COLOUR_SCORE)
 
-        pygame.draw.rect(self.surf, BACKGROUND_COLOUR, (0, 0, *self.size), border_radius=15)
-        pygame.draw.rect(self.surf, SCORE_BGCOLOUR, (0, 0, *self.size), border_radius=15, width=self.width)
+        # Background
+        pygame.draw.rect(
+            self.surf,
+            SCORE_BGCOLOUR,
+            (0, 0, *self.size),
+            border_radius=self.borderRad
+        )
+        # Outline
+        pygame.draw.rect(
+            self.surf,
+            SCORE_OUTCOLOUR,
+            (0, 0, *self.size),
+            border_radius=self.borderRad,
+            width=self.width
+        )
+        # Title
         self.surf.blit(
             title_surf,
             centerRect(
@@ -57,6 +74,7 @@ class uiScore(uiObject):
                 )
             )
         )
+        # Score
         self.surf.blit(
             score_surf,
             centerRect(

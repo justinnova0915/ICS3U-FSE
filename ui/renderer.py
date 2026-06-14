@@ -22,7 +22,7 @@ class Renderer:
 
         self.uiObjects : dict[str, uiObject | uiScore] = {
             "score"     : uiScore((125, 60), (150, 50), "SCORE"),
-            "highscore" : uiScore((125, 60), (300, 50), "BEST", width=2),
+            "highscore" : uiScore((125, 60), (300, 50), "BEST"  ),
         }
 
         self.win_anim_t = 0.0
@@ -113,7 +113,7 @@ class Renderer:
             self.boardSurf.blit(textSurf, textRect)
 
     def _render_ui(self, score: int, moves: int, state: State, on_click) -> None:
-        if state == State.GAME:
+        # if state == State.GAME:
             ''' Renders all ui-related surfaces'''
             # Render individual surfaces
             self.uiObjects["score"].render(score)
@@ -121,8 +121,8 @@ class Renderer:
             # Blit individual surfaces onto main surf
             for name in self.uiObjects.keys():
                 self.uiSurf.blit(self.uiObjects[name].surf, self.uiObjects[name].pos)
-        else:
-            self._render_win(score, moves, on_click)
+        # else:
+        #     self._render_win(score, moves, on_click)
     
     def _render_win(self, score: int, moves: int, on_click) -> None:
         if self.win_anim_t < 1.0:

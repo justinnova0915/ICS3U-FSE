@@ -14,7 +14,7 @@ def animate(t: float, text: pygame.Surface, start: tuple[float, float], end: tup
 
     curTextPos = (
         start[0] + (end[0] - start[0]) * lerp,
-        start[1] + (end[1] - start[1]) * lerp 
+        start[1] + (end[1] - start[1]) * lerp
     )
 
     textRect.center = curTextPos
