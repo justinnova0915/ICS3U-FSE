@@ -68,7 +68,7 @@ class Animator:
             (CELL_SIZE), 
             self._timeMap_spawn(self.progress)
         )
-        tile.pos = Vector(self._gridToPixel(*tile.curr)+(CELL_SIZE[0]/2, CELL_SIZE[1]/2)).lerp(
+        tile.pos = Vector(self._gridToPixel(*tile.curr)+(CELL_SIZE//2)).lerp(
             self._gridToPixel(*tile.curr),
             self._timeMap_spawn(self.progress)
         )
