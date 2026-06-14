@@ -20,7 +20,7 @@ SCREEN_FLAGS = pygame.RESIZABLE
 screen = pygame.display.set_mode(SCREEN_SIZE, SCREEN_FLAGS)
 pygame.display.set_caption("2048")
 
-state = State.LOSE
+state = State.GAME
 clock = pygame.time.Clock()
 MAX_FPS  = 60
 DT_STEP  = 1 / MAX_FPS
@@ -36,6 +36,10 @@ renderer = Renderer(screen, board.rows, board.cols, state)
 
 ########## ========= GAME LOOP ========== ##########
 
+def restart():
+    global state
+    board.reset()
+    state = State.GAME
 
 running = True
 while running:
@@ -76,11 +80,13 @@ while running:
     elif state == State.WIN:
         if action == "new_game":
             board.reset()
+            renderer.reset(screen, board.rows, board.cols, state)
             state = State.GAME
 
     elif state == State.LOSE:
         if action == "new_game":
             board.reset()
+            renderer.reset(screen, board.rows, board.cols, state)
             state = State.GAME
 
     elif state == State.MENU:
@@ -91,7 +97,7 @@ while running:
     ########## ========== DRAW ========== ##########
     screen.fill(BACKGROUND_COLOUR)
     animator.update(dt)
-    renderer.draw(state, board, animator.get_animatedTiles())
+    renderer.draw(state, board, animator.get_animatedTiles(), restart)
 
     pygame.display.set_caption(f"{clock.get_fps():.0f}")
 
