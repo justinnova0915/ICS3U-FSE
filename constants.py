@@ -14,15 +14,17 @@ def pathJoin(root: str | Path, path: str, *args) -> str:
 Coord    = namedtuple("Coord",      ['x', 'y'])
 Size     = namedtuple("Size",       ['w', 'h'])
 
+SCREEN_SIZE  = Size(900, 1000)
+
 ########## ============= UI ============= ##########
 
 FONTSIZE_DEFAULT = 36
 
 BACKGROUND_COLOUR = (250, 248, 239)
 
-SCORE_BGCOLOUR     = (156, 137, 121)
-SCORE_COLOUR_TITLE = (248, 238, 228)
-SCORE_COLOUR_SCORE = (250, 248, 239)
+SCORE_BGCOLOUR     = (234, 230, 218)
+SCORE_COLOUR_TITLE = (156, 137, 121)
+SCORE_COLOUR_SCORE = (156, 137, 121)
 
 
 ########## ======== BOARD & CELL ======== ##########
@@ -83,7 +85,7 @@ TILE_TEXT_COLOURS = {
 
 ########## ========= CONSTANTS ========== ##########
 
-ANIMATION_DURATION = .15
+ANIMATION_DURATION = .20
 
 WIN_TILE = 2048
 

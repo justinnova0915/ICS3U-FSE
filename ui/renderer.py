@@ -11,15 +11,22 @@ from    ui.uiObject     import uiObject, uiScore
 
 class Renderer:
     ''' Class for rendering all surfaces onto the screen '''
-    def __init__(self, screen: pygame.Surface, rows: int, cols: int) -> None:
+    def __init__(self, screen: pygame.Surface, rows: int, cols: int, state) -> None:
         self.screen    = screen
         self.uiSurf    = pygame.Surface((575, 250), pygame.SRCALPHA)
         self.boardSurf = pygame.Surface(self._get_board_size(rows, cols), pygame.SRCALPHA)
+        self.menuSurf  = pygame.Surface(screen.size, pygame.SRCALPHA)
+        self.state = state
 
         self.uiObjects : dict[str, uiObject | uiScore] = {
-            "score"     : uiScore((125, 60), (316, 0), "SCORE"),
-            "highscore" : uiScore((125, 60), (450, 0), "BEST" ),
+            "score"     : uiScore((125, 60), (150, 50), "SCORE"),
+            "highscore" : uiScore((125, 60), (300, 50), "BEST", width=2),
         }
+
+        self.win_anim_t = 0.0
+
+        self.gameOverFont = pygame.font.Font(FONT_FILENAME, 100)
+        self.scoreFont = pygame.font.Font(FONT_FILENAME, 20)
 
         self.fontSurfaces = {
             key: pygame.font.Font(
@@ -47,7 +54,7 @@ class Renderer:
         self.uiSurf.fill((0, 0, 0, 0))
         # Render surfaces
         self._render_board(board, tiles)
-        self._render_ui(board.score)
+        self._render_ui(board.score, board.moves, state)
         # Blit surfaces
         self.screen.blit(self.boardSurf, self._get_board_pos())
         self.screen.blit(self.uiSurf, self._get_ui_pos())            
@@ -95,15 +102,56 @@ class Renderer:
             textRect.center = rect.center
             self.boardSurf.blit(textSurf, textRect)
 
-    def _render_ui(self, score: int) -> None:
-        ''' Renders all ui-related surfaces'''
-        pygame.draw.rect(self.uiSurf, (255, 0, 0), (0, 0, *self.uiSurf.get_size()), 2)
-        # Render individual surfaces
-        self.uiObjects["score"].render(score)
-        self.uiObjects["highscore"].render(HIGHSCORE)
-        # Blit individual surfaces onto main surf
-        for name in self.uiObjects.keys():
-            self.uiSurf.blit(self.uiObjects[name].surf, self.uiObjects[name].pos)
+    def _render_ui(self, score: int, moves: int, state: State) -> None:
+        if state == State.GAME:
+            ''' Renders all ui-related surfaces'''
+            # Render individual surfaces
+            self.uiObjects["score"].render(score)
+            self.uiObjects["highscore"].render(HIGHSCORE)
+            # Blit individual surfaces onto main surf
+            for name in self.uiObjects.keys():
+                self.uiSurf.blit(self.uiObjects[name].surf, self.uiObjects[name].pos)
+        else:
+            self._render_win(score, moves)
+    
+    def _render_win(self, score: int, moves: int) -> None:
+        if self.win_anim_t < 1.0:
+            self.win_anim_t += 0.04
+            if self.win_anim_t > 1.0:
+                self.win_anim_t = 1.0
+
+        t = self.win_anim_t
+        c1 = 0.5
+        c3 = c1 + 1.0
+        curve_modifier = 1.0 + c3 * ((t - 1.0) ** 3) + c1 * ((t - 1.0) ** 2)
+
+        gameOverText = self.gameOverFont.render("Game Over", True, (156, 137, 121))
+        scoreText = self.scoreFont.render(f"{score} points scored in {moves} moves.", True, (156, 137, 121))
+
+        current_alpha = 0 + (255 - 0) * curve_modifier
+        current_alpha = max(0, min(255, int(current_alpha)))
+        
+        gameOverText.set_alpha(current_alpha)
+        scoreText.set_alpha(current_alpha)
+
+        gameOverRect = gameOverText.get_rect()
+        scoreRect = scoreText.get_rect()
+
+        go_start_y = -50
+        go_target_y = 50
+        
+        score_start_y = -50
+        score_target_y = 200
+
+        current_go_y = go_start_y + (go_target_y - go_start_y) * curve_modifier
+        current_score_y = score_start_y + (score_target_y - score_start_y) * curve_modifier
+
+        gameOverRect.midtop = (SCREEN_SIZE.w / 2, int(current_go_y))
+        scoreRect.midtop = (SCREEN_SIZE.w / 2, int(current_score_y))
+
+        self.screen.blit(gameOverText, gameOverRect)
+        self.screen.blit(scoreText, scoreRect)
+
 
     def _get_textSurface(self, value: int) -> pygame.Surface:
         ''' Renders the number surface of tiles'''

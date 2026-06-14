@@ -16,6 +16,7 @@ class Board:
         self.rows      : int
         self.cols      : int
         self.board     : list[Tile]
+        self.moves     : int
         ''' Dict of all the directions with their respective functions '''
         self.move_dir = {
             "left": (0, -1),
@@ -36,6 +37,7 @@ class Board:
         self.tileSpawn = tileSpawn
         self.score     = 0
         self.moved     = False
+        self.moves     = 0
         # Add starting tiles
         self.spawn_tile(2)
 
@@ -105,11 +107,14 @@ class Board:
                                 merging=True
                             ))
                             self.moved = True
+                            self.score += tile.value*2
+                            self.moves += 1
                             break
                     # if is none, then its an empty spot. move into it
                     else:
                         tile.curr = (next_r, next_c)
                         self.moved = True
+                        self.moves += 1
 
                 else:
                     break

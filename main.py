@@ -16,11 +16,11 @@ import ui.input_handler as     Input
 ########## ========= INITIALIZE ========= ##########
 pygame.init()
 
-SCREEN_SIZE  = Size(900, 1000)
 SCREEN_FLAGS = pygame.RESIZABLE
 screen = pygame.display.set_mode(SCREEN_SIZE, SCREEN_FLAGS)
 pygame.display.set_caption("2048")
 
+state = State.GAME
 clock = pygame.time.Clock()
 MAX_FPS  = 60
 DT_STEP  = 1 / MAX_FPS
@@ -32,11 +32,10 @@ TIMER = 2
 ########## ========== MODULES =========== ##########
 board    = Board()
 animator = Animator(board.board)
-renderer = Renderer(screen, board.rows, board.cols)
+renderer = Renderer(screen, board.rows, board.cols, state)
 
 ########## ========= GAME LOOP ========== ##########
 
-state = State.GAME
 
 running = True
 while running:
@@ -73,7 +72,6 @@ while running:
             board.reset()
 
         ######## ========= UPDATE ========= ########
-        animator.update(dt)
 
     elif state == State.WIN:
         if action == "new_game":
@@ -92,6 +90,7 @@ while running:
     
     ########## ========== DRAW ========== ##########
     screen.fill(BACKGROUND_COLOUR)
+    animator.update(dt)
     renderer.draw(state, board, animator.get_animatedTiles())
 
     pygame.display.set_caption(f"{clock.get_fps():.0f}")
