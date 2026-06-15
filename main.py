@@ -20,7 +20,7 @@ SCREEN_FLAGS = pygame.RESIZABLE
 screen = pygame.display.set_mode(SCREEN_SIZE, SCREEN_FLAGS)
 pygame.display.set_caption("2048")
 
-state = State.GAME
+state = State.MENU
 clock = pygame.time.Clock()
 MAX_FPS  = 60
 DT_STEP  = 1 / MAX_FPS

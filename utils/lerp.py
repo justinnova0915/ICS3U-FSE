@@ -1,7 +1,7 @@
 import pygame
 import constants
 
-def animate(t: float, text: pygame.Surface, start: tuple[float, float], end: tuple[float, float]) -> tuple[pygame.Surface, pygame.Rect]:
+def animate(t: float, text: pygame.Surface, start: tuple[float, float], end: tuple[float, float], centered:int=0) -> tuple[pygame.Surface, pygame.Rect]:
         
     c1 = 0.5
     c3 = c1 + 1.0
@@ -17,6 +17,12 @@ def animate(t: float, text: pygame.Surface, start: tuple[float, float], end: tup
         start[1] + (end[1] - start[1]) * lerp 
     )
 
-    textRect.center = curTextPos
+    if centered == 0:
+        textRect.center = curTextPos
+    elif centered == 1:
+        textRect.topleft = curTextPos
+    elif centered == 2:
+        textRect.topright = curTextPos
+
 
     return (text, textRect)

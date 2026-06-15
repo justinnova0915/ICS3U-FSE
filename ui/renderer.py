@@ -17,8 +17,12 @@ class Renderer:
         self.uiSurf    = pygame.Surface((575, 250), pygame.SRCALPHA)
         self.boardSurf = pygame.Surface(self._get_board_size(rows, cols), pygame.SRCALPHA)
         self.menuSurf  = pygame.Surface(screen.size, pygame.SRCALPHA)
+        self.startSurf: pygame.Surface
         self.restartSurf: pygame.Surface
         self.state = state
+
+        scoreFile = open("./best.txt")
+        self.leaderboard = [tuple(line.strip("\n").split(",")) for line in scoreFile.readlines()]
 
         self.uiObjects : dict[str, uiObject | uiScore] = {
             "score"     : uiScore((125, 60), (150, 50), "SCORE"),
@@ -30,6 +34,8 @@ class Renderer:
         self.gameOverFont = pygame.font.Font(FONT_FILENAME, 100)
         self.scoreFont = pygame.font.Font(FONT_FILENAME, 20)
         self.restartTextFont = pygame.font.Font(FONT_FILENAME, 25)
+        self.leaderboardFont = pygame.font.Font(FONT_FILENAME, 25)
+
 
         self.fontSurfaces = {
             key: pygame.font.Font(
@@ -50,7 +56,7 @@ class Renderer:
         self.uiSurf    = pygame.Surface((575, 250), pygame.SRCALPHA)
         self.boardSurf = pygame.Surface(self._get_board_size(rows, cols), pygame.SRCALPHA)
         self.menuSurf  = pygame.Surface(screen.size, pygame.SRCALPHA)
-        self.restartSurf: pygame.Surface
+        self.startSurf: pygame.Surface
         self.state = state
         self.win_anim_t = 0.0
 
@@ -74,8 +80,9 @@ class Renderer:
 
     def _render_board(self, board: Board, tiles: list[Tile]):
         ''' Renders all board-related surfaces'''
-        self._render_board_base(board)
-        self._render_board_tiles(tiles)
+        if self.state == State.GAME:
+            self._render_board_base(board)
+            self._render_board_tiles(tiles)
 
     def _render_board_base(self, board: Board) -> None:
         ''' Renders the base board '''
@@ -113,7 +120,11 @@ class Renderer:
             self.boardSurf.blit(textSurf, textRect)
 
     def _render_ui(self, score: int, moves: int, state: State, on_click) -> None:
-        if state == State.GAME:
+        if state == State.MENU:
+            self._render_menu(on_click)
+        elif state == State.GAME:
+            self._render_win(score, moves, on_click)
+        elif state == State.GAME:
             ''' Renders all ui-related surfaces'''
             # Render individual surfaces
             self.uiObjects["score"].render(score)
@@ -121,8 +132,6 @@ class Renderer:
             # Blit individual surfaces onto main surf
             for name in self.uiObjects.keys():
                 self.uiSurf.blit(self.uiObjects[name].surf, self.uiObjects[name].pos)
-        else:
-            self._render_win(score, moves, on_click)
     
     def _render_win(self, score: int, moves: int, on_click) -> None:
         if self.win_anim_t < 1.0:
@@ -149,7 +158,7 @@ class Renderer:
         self.restartSurf = pygame.Surface((restartButton_x, restartButton_y), pygame.SRCALPHA)
         pygame.draw.rect(self.restartSurf, BACKGROUND_COLOUR, (0, 0, restartButton_x, restartButton_y), border_radius=15)
         pygame.draw.rect(self.restartSurf, SCORE_BGCOLOUR, (0, 0, restartButton_x, restartButton_y), border_radius=15, width=5)
-        self.restartSurf.blit(restartText, (65, 5))
+        self.startSurf.blit(restartText, (65, 5))
 
         mouse_pos = pygame.mouse.get_pos()
         mouse_clicked = pygame.mouse.get_pressed()[0]
@@ -161,7 +170,115 @@ class Renderer:
 
         self.screen.blit(*animate(self.win_anim_t, gameOverText, (SCREEN_SIZE.w / 2, gameOver_y), (SCREEN_SIZE.w / 2, gameOver_Target_y)))
         self.screen.blit(*animate(self.win_anim_t, scoreText, (SCREEN_SIZE.w / 2, score_start_y), (SCREEN_SIZE.w / 2, score_target_y)))
-        self.screen.blit(*animate(self.win_anim_t, self.restartSurf, (SCREEN_SIZE.w / 2, restart_start_y), (SCREEN_SIZE.w / 2, restart_target_y)))
+        self.screen.blit(*animate(self.win_anim_t, self.startSurf, (SCREEN_SIZE.w / 2, restart_start_y), (SCREEN_SIZE.w / 2, restart_target_y)))
+
+    def _render_menu(self, on_click):
+        if self.win_anim_t < 1.0:
+            self.win_anim_t += 0.04
+            if self.win_anim_t > 1.0:
+                self.win_anim_t = 1.0
+
+        gameOverText = self.gameOverFont.render("2048", True, (156, 137, 121))
+        scoreText = self.scoreFont.render(f"Try to get to 2048 to win!", True, (156, 137, 121))
+        startText = self.restartTextFont.render("Start", True, (156, 137, 121))
+
+        startButton_x = 250
+        startButton_y = 50
+
+        gameOver_y = -50
+        gameOver_Target_y = 200
+        
+        score_start_y = -50
+        score_target_y = 300
+
+        start_start_y = -50
+        start_target_y = 370
+
+        self.startSurf = pygame.Surface((startButton_x, startButton_y), pygame.SRCALPHA)
+        pygame.draw.rect(self.startSurf, BACKGROUND_COLOUR, (0, 0, startButton_x, startButton_y), border_radius=15)
+        pygame.draw.rect(self.startSurf, SCORE_BGCOLOUR, (0, 0, startButton_x, startButton_y), border_radius=15, width=5)
+        startTextRect = startText.get_rect()
+        startTextRect.center = (startButton_x/2, startButton_y/2)
+        self.startSurf.blit(startText, startTextRect)
+
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_clicked = pygame.mouse.get_pressed()[0]
+        is_hovered = pygame.Rect(SCREEN_SIZE.w/2 - startButton_x/2, start_target_y - startButton_y/2, startButton_x, startButton_y).collidepoint(mouse_pos)
+
+        if is_hovered and mouse_clicked:
+            on_click()
+        
+
+        self.screen.blit(*animate(self.win_anim_t, gameOverText, (SCREEN_SIZE.w / 2, gameOver_y), (SCREEN_SIZE.w / 2, gameOver_Target_y)))
+        self.screen.blit(*animate(self.win_anim_t, scoreText, (SCREEN_SIZE.w / 2, score_start_y), (SCREEN_SIZE.w / 2, score_target_y)))
+        self.screen.blit(*animate(self.win_anim_t, self.startSurf, (SCREEN_SIZE.w / 2, start_start_y), (SCREEN_SIZE.w / 2, start_target_y)))
+        self._render_leaderboard()
+
+    def _render_leaderboard(self):
+        if self.win_anim_t < 1.0:
+            self.win_anim_t += 0.04
+            if self.win_anim_t > 1.0:
+                self.win_anim_t = 1.0
+
+        leaderboardText = self.leaderboardFont.render(f"LEADERBOARD", True, (156, 137, 121))
+        
+        leaderboard_start_y = -50
+        leaderboard_target_y = 500
+
+        self.screen.blit(*animate(self.win_anim_t, leaderboardText, (SCREEN_SIZE.w / 2, leaderboard_start_y), (SCREEN_SIZE.w / 2, leaderboard_target_y)))
+        dividerSurface = pygame.Surface((600, 5), pygame.SRCALPHA)
+        pygame.draw.rect(dividerSurface, (156, 137, 121), (0, 0, 400, 5))
+        self.screen.blit(*animate(self.win_anim_t, dividerSurface, (SCREEN_SIZE.w / 2-200, leaderboard_start_y), (SCREEN_SIZE.w / 2-200, 530), centered=1))
+        for i in range(len(self.leaderboard)):
+            text = self.leaderboardFont.render(f"#{i+1:<4}{self.leaderboard[i][0]:<10}", True, (156, 137, 121))
+            score = self.leaderboardFont.render(f"{self.leaderboard[i][1]}", True, (156, 137, 121))
+            self.screen.blit(*animate(self.win_anim_t, text, (SCREEN_SIZE.w / 2-150, leaderboard_start_y), (SCREEN_SIZE.w / 2-150, leaderboard_target_y+100+i*50), centered=1))
+            self.screen.blit(*animate(self.win_anim_t, score, (SCREEN_SIZE.w / 2+150, leaderboard_start_y), (SCREEN_SIZE.w / 2+150, leaderboard_target_y+100+i*50), centered=2))
+            self.screen.blit(*animate(self.win_anim_t, score, (SCREEN_SIZE.w / 2+150, leaderboard_start_y), (SCREEN_SIZE.w / 2+150, leaderboard_target_y+100+i*50), centered=2))
+        self._render_dialog()
+
+    def _render_dialog(self):
+
+        if self.win_anim_t < 1.0:
+            self.win_anim_t += 0.04
+            if self.win_anim_t > 1.0:
+                self.win_anim_t = 1.0
+
+        fieldString = ""
+        title = self.gameOverFont.render("Enter your name:", True, (156, 137, 121))
+        submitText = self.scoreFont.render(f"Submit", True, (156, 137, 121))
+        fieldRect = pygame.Rect(0, 0, 500, 50)
+        
+        submitButton_x = 250
+        submitButton_y = 50
+
+        dialog_x = 500
+        dialog_y = 300
+
+        title_y = -50
+        title_Target_y = 200
+        
+        submit_start_y = -50
+        submit_target_y = 300
+
+        self.dialogSurf = pygame.Surface((dialog_x, dialog_y), pygame.SRCALPHA)
+        pygame.draw.rect(self.dialogSurf, (156, 137, 121), (0, 0, dialog_x, dialog_y), border_radius=20)
+        pygame.draw.rect(self.dialogSurf, BACKGROUND_COLOUR, (0, 0, submitButton_x, submitButton_y), border_radius=15)
+        pygame.draw.rect(self.dialogSurf, SCORE_BGCOLOUR, (0, 0, submitButton_x, submitButton_y), border_radius=15, width=5)
+        submitTextRect = submitText.get_rect()
+        submitTextRect.center = (submitButton_x/2, submitButton_y/2)
+        self.dialogSurf.blit(submitText, submitTextRect)
+
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_clicked = pygame.mouse.get_pressed()[0]
+        is_hovered = pygame.Rect(SCREEN_SIZE.w/2 - submitButton_x/2, submit_target_y - submitButton_y/2, submitButton_x, submitButton_y).collidepoint(mouse_pos)
+
+        if is_hovered and mouse_clicked:
+            pass
+        
+        self.screen.blit(*animate(self.win_anim_t, self.dialogSurf, (SCREEN_SIZE.w / 2, submit_start_y), (SCREEN_SIZE.w / 2, submit_target_y)))
+
+        
 
     def _get_textSurface(self, value: int) -> pygame.Surface:
         ''' Renders the number surface of tiles'''

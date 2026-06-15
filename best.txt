@@ -1,0 +1,3 @@
+Justin,100000
+Jerry,100000
+Albert,100000
