@@ -1,3 +1,5 @@
+from    typing  import overload, Callable, Any, Literal
+
 import  pygame
 
 from    constants       import *
@@ -21,23 +23,32 @@ class RendererManager:
         self.lose = LoseRenderer(screen)
     
 
-    def render(self, state: State) -> None:
+    @overload
+    def render(self, state: Literal[State.MENU]) -> None: ...
+    @overload
+    def render(self, state: Literal[State.GAME], board: Board, tiles: list[Tile], score: int, highscore: int) -> None: ...
+    @overload
+    def render(self, state: Literal[State.WIN]) -> None: ...
+    @overload
+    def render(self, state: Literal[State.LOSE], score: int, moves: int, onClick: Callable) -> None: ...
+
+    def render(self, state: State, *args: Any) -> None:
         ''' Blits all rendered surfaces onto the screen '''
         # Clear background
         self.screen.fill(BACKGROUND_COLOUR)
         # Render surfaces
         match state:
             case State.MENU:
-                self.menu.render()
+                self.menu.render(*args)
                 ...
             case State.GAME:
-                self.game.render()
+                self.game.render(*args)
                 ...
             case State.WIN:
-                self.win.render()
+                self.win.render(*args)
                 ...
             case State.LOSE:
-                self.lost.render()
+                self.lose.render(*args)
                 ...
 
 
@@ -57,58 +68,15 @@ class MenuRenderer(Renderer):
 
     def __init__(self, screen: pygame.Surface) -> None:
         super().__init__(screen)
-        
-        # Surfaces
         self.surface = pygame.Surface(self.screen.size, pygame.SRCALPHA)
 
-        # Animation
-        self.win_anim_t = 0.0
+        self.uiObjects : dict[str, UIObject]= {
+            
+        }
 
-        self.restartButton_x = 250
-        self.restartButton_y = 50
-
-        self.gameOver_y = -50
-        self.gameOver_Target_y = 50
-
-        self.score_start_y = -50
-        self.score_target_y = 150
-
-        self.restart_start_y = -50
-        self.restart_target_y = 280
-
-        # Font cache
-        self.gameOverFont = pygame.font.Font(FONT_FILENAME, 100)
-        self.scoreFont = pygame.font.Font(FONT_FILENAME, 20)
-        self.restartTextFont = pygame.font.Font(FONT_FILENAME, 25)
-
-    def render(self, score: int, moves: int, on_click) -> None:
+    def render(self) -> None:
         super().render()
-        
-        if self.win_anim_t < 1.0:
-            self.win_anim_t += 0.04
-            if self.win_anim_t > 1.0:
-                self.win_anim_t = 1.0
-
-        gameOverText = self.gameOverFont.render("Game Over", True, (156, 137, 121))
-        scoreText = self.scoreFont.render(f"You scored {score} points in {moves} moves.", True, (156, 137, 121))
-        restartText = self.restartTextFont.render("Play Again", True, (156, 137, 121))
-
-        self.restartSurf = pygame.Surface((self.restartButton_x, self.restartButton_y), pygame.SRCALPHA)
-        pygame.draw.rect(self.restartSurf, BACKGROUND_COLOUR, (0, 0, self.restartButton_x, self.restartButton_y), border_radius=15)
-        pygame.draw.rect(self.restartSurf, SCORE_BGCOLOUR, (0, 0, self.restartButton_x, self.restartButton_y), border_radius=15, width=5)
-        self.restartSurf.blit(restartText, (65, 5))
-
-        mouse_pos = pygame.mouse.get_pos()
-        mouse_clicked = pygame.mouse.get_pressed()[0]
-        is_hovered = pygame.Rect(SCREEN_SIZE.w/2 - self.restartButton_x/2, self.restart_target_y - self.restartButton_y/2, self.restartButton_x, self.restartButton_y).collidepoint(mouse_pos)
-
-        if is_hovered and mouse_clicked:
-            on_click()
-
-        self.screen.blit(*animate(self.win_anim_t, gameOverText, (SCREEN_SIZE.w / 2, self.gameOver_y), (SCREEN_SIZE.w / 2, self.gameOver_Target_y)))
-        self.screen.blit(*animate(self.win_anim_t, scoreText, (SCREEN_SIZE.w / 2, self.score_start_y), (SCREEN_SIZE.w / 2, self.score_target_y)))
-        self.screen.blit(*animate(self.win_anim_t, self.restartSurf, (SCREEN_SIZE.w / 2, self.restart_start_y), (SCREEN_SIZE.w / 2, self.restart_target_y)))
-
+        ...
 
 class GameRenderer(Renderer):
     ''' Renderer object for all 'GAME' state surfaces '''
@@ -121,7 +89,7 @@ class GameRenderer(Renderer):
         self.boardSurf = pygame.Surface(self._get_boardSize(Board.rows, Board.cols), pygame.SRCALPHA)
 
         # Ui objects
-        self.uiObjects : dict[str, UIObject | UIScore] = {
+        self.uiObjects : dict[str, UIScore] = {
             "score"     : UIScore((125, 60), (150, 50), "SCORE"),
             "highscore" : UIScore((125, 60), (300, 50), "BEST", border=True),
         }
@@ -265,8 +233,54 @@ class LoseRenderer(Renderer):
 
     def __init__(self, screen: pygame.Surface) -> None:
         super().__init__(screen)
+        
+        # Surfaces
         self.surface = pygame.Surface(self.screen.size, pygame.SRCALPHA)
 
-    def render(self) -> None:
+        # Animation
+        self.win_anim_t = 0.0
+
+        self.restartButton_x = 250
+        self.restartButton_y = 50
+
+        self.gameOver_y = -50
+        self.gameOver_Target_y = 50
+
+        self.score_start_y = -50
+        self.score_target_y = 150
+
+        self.restart_start_y = -50
+        self.restart_target_y = 280
+
+        # Font cache
+        self.gameOverFont = pygame.font.Font(FONT_FILENAME, 100)
+        self.scoreFont = pygame.font.Font(FONT_FILENAME, 20)
+        self.restartTextFont = pygame.font.Font(FONT_FILENAME, 25)
+
+    def render(self, score: int, moves: int, onClick) -> None:
         super().render()
-        ...
+        
+        if self.win_anim_t < 1.0:
+            self.win_anim_t += 0.04
+            if self.win_anim_t > 1.0:
+                self.win_anim_t = 1.0
+
+        gameOverText = self.gameOverFont.render("Game Over", True, (156, 137, 121))
+        scoreText = self.scoreFont.render(f"You scored {score} points in {moves} moves.", True, (156, 137, 121))
+        restartText = self.restartTextFont.render("Play Again", True, (156, 137, 121))
+
+        self.restartSurf = pygame.Surface((self.restartButton_x, self.restartButton_y), pygame.SRCALPHA)
+        pygame.draw.rect(self.restartSurf, BACKGROUND_COLOUR, (0, 0, self.restartButton_x, self.restartButton_y), border_radius=15)
+        pygame.draw.rect(self.restartSurf, SCORE_BGCOLOUR, (0, 0, self.restartButton_x, self.restartButton_y), border_radius=15, width=5)
+        self.restartSurf.blit(restartText, (65, 5))
+
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_clicked = pygame.mouse.get_pressed()[0]
+        is_hovered = pygame.Rect(SCREEN_SIZE.w/2 - self.restartButton_x/2, self.restart_target_y - self.restartButton_y/2, self.restartButton_x, self.restartButton_y).collidepoint(mouse_pos)
+
+        if is_hovered and mouse_clicked:
+            onClick()
+
+        self.screen.blit(*animate(self.win_anim_t, gameOverText, (SCREEN_SIZE.w / 2, self.gameOver_y), (SCREEN_SIZE.w / 2, self.gameOver_Target_y)))
+        self.screen.blit(*animate(self.win_anim_t, scoreText, (SCREEN_SIZE.w / 2, self.score_start_y), (SCREEN_SIZE.w / 2, self.score_target_y)))
+        self.screen.blit(*animate(self.win_anim_t, self.restartSurf, (SCREEN_SIZE.w / 2, self.restart_start_y), (SCREEN_SIZE.w / 2, self.restart_target_y)))

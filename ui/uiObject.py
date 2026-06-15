@@ -4,7 +4,7 @@ import pygame
 
 from   constants        import *
 from   utils.namedpair  import Size
-from   utils.vector     import Coord
+from   utils.vector     import Vector
 
 
 def centerRect(
@@ -18,7 +18,7 @@ def centerRect(
 
 
 class UIObject:
-    def __init__(self, size: tuple[int, int] | Size, pos: tuple[int, int] | Coord):
+    def __init__(self, size: tuple[int, int] | Size, pos: tuple[int, int] | Coord) -> None:
         self.surf : pygame.Surface
         self.size : Size
         self.pos  : Coord
@@ -33,7 +33,7 @@ class UIObject:
         ...
 
 class UIScore(UIObject):
-    def __init__(self, size: tuple[int, int] | Size, pos: tuple[int, int] | Coord, title: str, border: bool = False):
+    def __init__(self, size: tuple[int, int] | Size, pos: tuple[int, int] | Coord, title: str, border: bool = False) -> None:
         super().__init__(size, pos)
         self.title = title
 
@@ -90,5 +90,12 @@ class UIScore(UIObject):
             )
         )
 
-class AnimatedUIObject(UIObject):
-    def __init__(self, size: tuple[int, int] | Size, sPos)
+class AnimatedUIObject():
+    def __init__(self, size: Size | tuple[int, int], sPos: Vector | tuple[int, int], ePos: Vector | tuple[int, int]) -> None:
+        self.surf = pygame.Surface(size, pygame.SRCALPHA)
+        self.sPos = Vector(sPos)
+        self.ePos = Vector(ePos)
+        self.pos : Vector
+
+    def render(self) -> None:
+        ...
