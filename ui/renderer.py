@@ -41,6 +41,7 @@ class Renderer:
         self.restartTextFont = pygame.font.Font(FONT_FILENAME, 25)
         self.leaderboardFont = pygame.font.Font(FONT_FILENAME, 25)
         self.titleFont = pygame.font.Font(FONT_FILENAME, 30)
+        self.bgImage = pygame.image.load("./assets/twitterImage-removebg-preview.png").convert_alpha()
 
 
 
@@ -224,21 +225,23 @@ class Renderer:
             self._render_dialog(events, score)
 
     def _render_menu(self, on_click):
-        gameOverText = self.gameOverFont.render("2048", True, (156, 137, 121))
+        titleText = self.gameOverFont.render("2048", True, (156, 137, 121))
         scoreText = self.scoreFont.render(f"Try to get to 2048 to win!", True, (156, 137, 121))
         startText = self.restartTextFont.render("Start", True, (156, 137, 121))
 
         startButton_x = 250
         startButton_y = 50
 
-        gameOver_y = -50
-        gameOver_Target_y = 200
+        title_y = -50
+        title_Target_y = 300
         
         score_start_y = -50
-        score_target_y = 300
+        score_target_y = 400
 
         start_start_y = -50
-        start_target_y = 370
+        start_target_y = 470
+
+        left_col = 230
 
         self.startSurf = pygame.Surface((startButton_x, startButton_y), pygame.SRCALPHA)
         pygame.draw.rect(self.startSurf, BACKGROUND_COLOUR, (0, 0, startButton_x, startButton_y), border_radius=15)
@@ -249,33 +252,47 @@ class Renderer:
 
         mouse_pos = pygame.mouse.get_pos()
         mouse_clicked = pygame.mouse.get_pressed()[0]
-        is_hovered = pygame.Rect(SCREEN_SIZE.w/2 - startButton_x/2, start_target_y - startButton_y/2, startButton_x, startButton_y).collidepoint(mouse_pos)
+        is_hovered = pygame.Rect(SCREEN_SIZE.w/2 - startButton_x/2 - left_col, start_target_y - startButton_y/2, startButton_x, startButton_y).collidepoint(mouse_pos)
 
+        if is_hovered:
+            tint = pygame.Surface((startButton_x, startButton_y), pygame.SRCALPHA)
+            
+            pygame.draw.rect(
+                tint, 
+                (230, 230, 230, 255), 
+                (0, 0, startButton_x, startButton_y), 
+                border_radius=15
+            )
+            
+            self.startSurf.blit(tint, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
         if is_hovered and mouse_clicked:
             on_click()
         
 
-        self.screen.blit(*animate(self.win_anim_t, gameOverText, (SCREEN_SIZE.w / 2, gameOver_y), (SCREEN_SIZE.w / 2, gameOver_Target_y)))
-        self.screen.blit(*animate(self.win_anim_t, scoreText, (SCREEN_SIZE.w / 2, score_start_y), (SCREEN_SIZE.w / 2, score_target_y)))
-        self.screen.blit(*animate(self.win_anim_t, self.startSurf, (SCREEN_SIZE.w / 2, start_start_y), (SCREEN_SIZE.w / 2, start_target_y)))
+        self.screen.blit(*animate(self.win_anim_t, titleText, (SCREEN_SIZE.w / 2 - left_col, title_y), (SCREEN_SIZE.w / 2 - left_col, title_Target_y)))
+        self.screen.blit(*animate(self.win_anim_t, scoreText, (SCREEN_SIZE.w / 2 - left_col, score_start_y), (SCREEN_SIZE.w / 2 - left_col, score_target_y)))
+        self.screen.blit(*animate(self.win_anim_t, self.startSurf, (SCREEN_SIZE.w / 2 - left_col, start_start_y), (SCREEN_SIZE.w / 2 - left_col, start_target_y)))
+        self.screen.blit(pygame.transform.smoothscale(self.bgImage, (self.screen.get_width(), int(self.bgImage.get_height() * (self.screen.get_width() / self.bgImage.get_width())))), (0, self.screen.get_height() - int(self.bgImage.get_height() * (self.screen.get_width() / self.bgImage.get_width()))))
         self._render_leaderboard()
 
     def _render_leaderboard(self):
         leaderboardText = self.leaderboardFont.render(f"LEADERBOARD", True, (156, 137, 121))
         
         leaderboard_start_y = -50
-        leaderboard_target_y = 500
+        leaderboard_target_y = 300
 
-        self.screen.blit(*animate(self.win_anim_t, leaderboardText, (SCREEN_SIZE.w / 2, leaderboard_start_y), (SCREEN_SIZE.w / 2, leaderboard_target_y)))
-        dividerSurface = pygame.Surface((600, 5), pygame.SRCALPHA)
-        pygame.draw.rect(dividerSurface, (156, 137, 121), (0, 0, 400, 5))
-        self.screen.blit(*animate(self.win_anim_t, dividerSurface, (SCREEN_SIZE.w / 2-200, leaderboard_start_y), (SCREEN_SIZE.w / 2-200, 530), centered=1))
+        right_col = 200
+
+        self.screen.blit(*animate(self.win_anim_t, leaderboardText, (SCREEN_SIZE.w / 2 + right_col, leaderboard_start_y), (SCREEN_SIZE.w / 2 + right_col, leaderboard_target_y)))
+        dividerSurface = pygame.Surface((800, 5), pygame.SRCALPHA)
+        pygame.draw.rect(dividerSurface, (156, 137, 121), (0, 0, 350, 5))
+        self.screen.blit(*animate(self.win_anim_t, dividerSurface, (SCREEN_SIZE.w / 2-200 + right_col, leaderboard_start_y), (SCREEN_SIZE.w / 2-200 + right_col+25, leaderboard_target_y+50), centered=1))
         for i in range(len(self.leaderboard)):
             text = self.leaderboardFont.render(f"#{i+1:<4}{self.leaderboard[i][0]:<10}", True, (156, 137, 121))
             score = self.leaderboardFont.render(f"{self.leaderboard[i][1]}", True, (156, 137, 121))
-            self.screen.blit(*animate(self.win_anim_t, text, (SCREEN_SIZE.w / 2-150, leaderboard_start_y), (SCREEN_SIZE.w / 2-150, leaderboard_target_y+100+i*50), centered=1))
-            self.screen.blit(*animate(self.win_anim_t, score, (SCREEN_SIZE.w / 2+150, leaderboard_start_y), (SCREEN_SIZE.w / 2+150, leaderboard_target_y+100+i*50), centered=2))
-            self.screen.blit(*animate(self.win_anim_t, score, (SCREEN_SIZE.w / 2+150, leaderboard_start_y), (SCREEN_SIZE.w / 2+150, leaderboard_target_y+100+i*50), centered=2))
+            self.screen.blit(*animate(self.win_anim_t, text, (SCREEN_SIZE.w / 2-150 + right_col, leaderboard_start_y), (SCREEN_SIZE.w / 2-150 + right_col, leaderboard_target_y+70+i*50), centered=1))
+            self.screen.blit(*animate(self.win_anim_t, score, (SCREEN_SIZE.w / 2+150 + right_col, leaderboard_start_y), (SCREEN_SIZE.w / 2+150 + right_col, leaderboard_target_y+70+i*50), centered=2))
+            self.screen.blit(*animate(self.win_anim_t, score, (SCREEN_SIZE.w / 2+150 + right_col, leaderboard_start_y), (SCREEN_SIZE.w / 2+150 + right_col, leaderboard_target_y+70+i*50), centered=2))
 
     def _render_dialog(self, events: list[pygame.Event], score: int):
         field_x = 250
@@ -316,6 +333,18 @@ class Renderer:
         mouse_clicked = pygame.mouse.get_pressed()[0]
         is_hovered = pygame.Rect(SCREEN_SIZE.w/2 - submitButton_x/2, dialog_target_y-dialog_y/2+submit_target_y, submitButton_x, submitButton_y).collidepoint(mouse_pos)
 
+        if is_hovered:
+            tint = pygame.Surface((submitButton_x, submitButton_y), pygame.SRCALPHA)
+            tint.fill(156, 137, 121, 255)
+
+            pygame.draw.rect(
+                tint, 
+                (230, 230, 230, 255), 
+                (0, 0, submitButton_x, submitButton_y), 
+                border_radius=15
+            )
+            
+            self.dialogSurf.blit(tint, (self.dialogSurf.width/2 - submitButton_x/2, submit_target_y), special_flags=pygame.BLEND_RGBA_MULT)
         if mouse_clicked and is_hovered:
             self._save_score(self.fieldString, score)
             self.saved = True
