@@ -2,16 +2,19 @@
 # FSE May - July 2026
 
 ########## ========== IMPORTS =========== ##########
-import json
+import  json
 
-import pygame
+import  pygame
 
-from   constants        import *
-from   game.board       import Board
-from   game.state       import State
-from   ui.renderer      import Renderer
-from   ui.animator      import Animator
-import ui.input_handler as     Input
+from    constants           import *
+from    game.board          import Board
+from    game.state          import State
+from    ui.renderer         import Renderer
+from    ui.animator         import Animator
+import  ui.inputHandler     as     Input
+
+import  ui.uiObject         as     ui
+from    utils.vector        import Vector
 
 ########## ========= INITIALIZE ========= ##########
 pygame.init()
@@ -46,6 +49,16 @@ def reset():
 
 with open(pathJoin(ROOT_PATH, "data", "highscore.json")) as file:
     highscore = json.load(file)["highscore"]
+
+
+textbox = ui.UIText(
+    Size(125, 60),
+    Vector(100, 100),
+    "Lorem Ipsum",
+    pygame.font.Font(FONT_FILENAME, 16),
+    SCORE_TITLECOLOUR,
+    'c',
+)
 
 
 ########## ========= GAME LOOP ========== ##########

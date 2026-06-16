@@ -21,9 +21,9 @@ class Renderer:
 
         self.state     = state
 
-        self.uiObjects : dict[str, UIRect | UIScore] = {
-            "score"     : UIScore(Size(125, 60), Vector(150, 50), "SCORE"),
-            "highscore" : UIScore(Size(125, 60), Vector(300, 50), "BEST", border=True),
+        self.uiObjects : dict[str, UIScore] = {
+            "score"     : UIScore(Size(125, 60), Vector(150, 155), "SCORE", SCORE_TITLECOLOUR, SCORE_SCORECOLOUR, SCORE_BGCOLOUR),
+            "highscore" : UIScore(Size(125, 60), Vector(300, 155), "BEST",  SCORE_TITLECOLOUR, SCORE_SCORECOLOUR, SCORE_BGCOLOUR, 2, SCORE_OUTCOLOUR),
         }
 
         self.win_anim_t = 0.0
@@ -132,11 +132,11 @@ class Renderer:
 
     def _renderUi_MENU(self) -> None: ...
 
-    def _renderUi_GAME(self, score: int, highscore: int) -> None:
+    def _renderUi_GAME(self, currScore: int, highscore: int) -> None:
         ''' Renders the ui for 'GAME' state '''
         # Render individual surfaces
-        self.uiObjects["score"].render(score)
-        self.uiObjects["highscore"].render(highscore)
+        self.uiObjects["score"].render(score=currScore)
+        self.uiObjects["highscore"].render(score=highscore)
         # Blit individual surfaces onto main surf
         for name in self.uiObjects.keys():
             self.uiSurf.blit(self.uiObjects[name].surface, self.uiObjects[name].pos.to_int())
