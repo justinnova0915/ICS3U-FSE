@@ -1,3 +1,5 @@
-Justin,100000
-Jerry,100000
-Albert,100000
+awow,2452
+idk,1352
+idkman,628
+Justin,1
+Jerry,1
