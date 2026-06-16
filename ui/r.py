@@ -6,7 +6,7 @@ from    constants       import *
 from    utils.namedpair import Size, Coord
 from    utils.tiles     import Tile
 from    utils.lerp      import animate
-from    ui.uiObject     import UIObject, UIScore
+from    ui.uiObject     import UIObject, UIScore, UIText
 from    game.state      import State
 from    game.board      import Board
 
@@ -70,7 +70,7 @@ class MenuRenderer(Renderer):
         super().__init__(screen)
         self.surface = pygame.Surface(self.screen.size, pygame.SRCALPHA)
 
-        self.uiObjects : dict[str, UIObject]= {
+        self.uiObjects : dict[str, UIText]= {
             
         }
 
@@ -133,7 +133,7 @@ class GameRenderer(Renderer):
         self.uiObjects["highscore"].render(highscore)
         # Blit individual surfaces onto main surf
         for name in self.uiObjects.keys():
-            self.uiSurf.blit(self.uiObjects[name].surf, self.uiObjects[name].pos)
+            self.uiSurf.blit(self.uiObjects[name].surface, self.uiObjects[name].pos)
 
     
     def _renderBoard_base(self, board: Board) -> None:
@@ -218,24 +218,13 @@ class GameRenderer(Renderer):
 
 class WinRenderer(Renderer):
     ''' Renderer object for all 'WIN' state surfaces '''
-    
-    def __init__(self, screen: pygame.Surface) -> None:
-        super().__init__(screen)
-        self.surface = pygame.Surface(self.screen.size, pygame.SRCALPHA)
-
-    def render(self) -> None:
-        super().render()
-        ...
-
-
-class LoseRenderer(Renderer):
-    ''' Renderer object for all 'LOSE' state surfaces '''
 
     def __init__(self, screen: pygame.Surface) -> None:
+
         super().__init__(screen)
         
         # Surfaces
-        self.surface = pygame.Surface(self.screen.size, pygame.SRCALPHA)
+        self.surface = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
 
         # Animation
         self.win_anim_t = 0.0
@@ -258,6 +247,67 @@ class LoseRenderer(Renderer):
         self.restartTextFont = pygame.font.Font(FONT_FILENAME, 25)
 
     def render(self, score: int, moves: int, onClick) -> None:
+
+        super().render()
+        
+        if self.win_anim_t < 1.0:
+            self.win_anim_t += 0.04
+            if self.win_anim_t > 1.0:
+                self.win_anim_t = 1.0
+
+        gameOverText = self.gameOverFont.render("You win!", True, (156, 137, 121))
+        scoreText = self.scoreFont.render(f"You scored {score} points in {moves} moves.", True, (156, 137, 121))
+        restartText = self.restartTextFont.render("Play Again", True, (156, 137, 121))
+
+        self.restartSurf = pygame.Surface((self.restartButton_x, self.restartButton_y), pygame.SRCALPHA)
+        pygame.draw.rect(self.restartSurf, BACKGROUND_COLOUR, (0, 0, self.restartButton_x, self.restartButton_y), border_radius=15)
+        pygame.draw.rect(self.restartSurf, SCORE_BGCOLOUR, (0, 0, self.restartButton_x, self.restartButton_y), border_radius=15, width=5)
+        self.restartSurf.blit(restartText, (65, 5))
+
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_clicked = pygame.mouse.get_pressed()[0]
+        is_hovered = pygame.Rect(SCREEN_SIZE.w/2 - self.restartButton_x/2, self.restart_target_y - self.restartButton_y/2, self.restartButton_x, self.restartButton_y).collidepoint(mouse_pos)
+
+        if is_hovered and mouse_clicked:
+            onClick()
+
+        self.screen.blit(*animate(self.win_anim_t, gameOverText, (SCREEN_SIZE.w / 2, self.gameOver_y), (SCREEN_SIZE.w / 2, self.gameOver_Target_y)))
+        self.screen.blit(*animate(self.win_anim_t, scoreText, (SCREEN_SIZE.w / 2, self.score_start_y), (SCREEN_SIZE.w / 2, self.score_target_y)))
+        self.screen.blit(*animate(self.win_anim_t, self.restartSurf, (SCREEN_SIZE.w / 2, self.restart_start_y), (SCREEN_SIZE.w / 2, self.restart_target_y)))
+
+
+class LoseRenderer(Renderer):
+    ''' Renderer object for all 'LOSE' state surfaces '''
+
+    def __init__(self, screen: pygame.Surface) -> None:
+
+        super().__init__(screen)
+        
+        # Surfaces
+        self.surface = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
+
+        # Animation
+        self.win_anim_t = 0.0
+
+        self.restartButton_x = 250
+        self.restartButton_y = 50
+
+        self.gameOver_y = -50
+        self.gameOver_Target_y = 50
+
+        self.score_start_y = -50
+        self.score_target_y = 150
+
+        self.restart_start_y = -50
+        self.restart_target_y = 280
+
+        # Font cache
+        self.gameOverFont = pygame.font.Font(FONT_FILENAME, 100)
+        self.scoreFont = pygame.font.Font(FONT_FILENAME, 20)
+        self.restartTextFont = pygame.font.Font(FONT_FILENAME, 25)
+
+    def render(self, score: int, moves: int, onClick) -> None:
+
         super().render()
         
         if self.win_anim_t < 1.0:

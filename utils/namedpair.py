@@ -1,7 +1,7 @@
 from   functools        import wraps
 from   collections.abc  import Sequence, Iterable
 
-def _coerce_pair(value : Iterable[int | float]) -> tuple[int, int]:    
+def _coerce_pair(value : Iterable[int | float]) -> tuple[float, float]:    
     # Type check
     if isinstance(value, (str, bytes)):
         raise TypeError("String is not a valid NamedTuple input")
@@ -18,7 +18,7 @@ def _coerce_pair(value : Iterable[int | float]) -> tuple[int, int]:
         raise ValueError("Elements must be numeric (cannot be string or char)")
     
     # Return components as ints
-    return int(x), int(y)
+    return float(x), float(y)
 
 def _coerce_scalar(scalar : float | int):
     if isinstance(scalar, (int, float)):
@@ -31,8 +31,9 @@ def _wrapper_coerce_pair(method):
     def wrapper(self, other):
         # 1. Enforce strict type matching for NamedPair subclasses
         if isinstance(other, NamedPair):
-            if type(self) is not type(other):
-                return NotImplemented
+            # Enforce same type
+            ##### if type(self) is not type(other):
+            #####     return NotImplemented
             # Since it's the exact same type, we know it's safe to unpack
             return method(self, other._data)
         
@@ -60,7 +61,7 @@ def _wrapper_coerce_scalar(method):
     return wrapper
 
 
-class NamedPair(Sequence[int]):
+class NamedPair(Sequence[float | int]):
     __slots__ = ("_data") # No mutability
     _fields   = ('', '') # Subclasses define attribute names
 
@@ -154,6 +155,18 @@ class NamedPair(Sequence[int]):
     @_wrapper_coerce_scalar
     def __floordiv__(self, other):
         return type(self)(self._data[0] // other, self._data[1] // other)
+    
+
+    # --- Tuple Operations --- #
+
+    def to_int(self) -> tuple[int, int]:
+        return int(self._data[0]), int(self._data[1])
+    
+    def to_tuple(self) -> tuple[float, float]:
+        return self._data
+    
+    def to_list(self) -> list[float]:
+        return [*self._data]
 
 
 

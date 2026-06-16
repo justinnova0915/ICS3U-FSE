@@ -2,8 +2,9 @@ import  pygame
 
 from    constants       import *
 from    utils.namedpair import Size, Coord
+from    utils.vector    import Vector
 from    utils.lerp      import animate
-from    ui.uiObject     import UIObject, UIScore
+from    ui.uiObject     import UIObject, UIScore, UIRect
 from    game.state      import State
 from    game.board      import Board
 from    utils.tiles     import Tile
@@ -15,13 +16,14 @@ class Renderer:
         self.screen    = screen
         self.uiSurf    = pygame.Surface((575, 250), pygame.SRCALPHA)
         self.boardSurf = pygame.Surface(self._get_board_size(rows, cols), pygame.SRCALPHA)
-        self.menuSurf  = pygame.Surface(screen.size, pygame.SRCALPHA)
+        self.menuSurf  = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
         self.restartSurf: pygame.Surface
-        self.state = state
 
-        self.uiObjects : dict[str, UIObject | UIScore] = {
-            "score"     : UIScore((125, 60), (150, 50), "SCORE"),
-            "highscore" : UIScore((125, 60), (300, 50), "BEST", border=True),
+        self.state     = state
+
+        self.uiObjects : dict[str, UIRect | UIScore] = {
+            "score"     : UIScore(Size(125, 60), Vector(150, 50), "SCORE"),
+            "highscore" : UIScore(Size(125, 60), Vector(300, 50), "BEST", border=True),
         }
 
         self.win_anim_t = 0.0
@@ -61,6 +63,9 @@ class Renderer:
         self.screen.fill(BACKGROUND_COLOUR)
         self.boardSurf.fill((0, 0, 0, 0))
         self.uiSurf   .fill((0, 0, 0, 0))
+        # DEBUG
+        pygame.draw.rect(self.boardSurf, (255, 0, 0), self.boardSurf.get_rect(), 2)
+        pygame.draw.rect(self.uiSurf, (0, 0, 255), self.uiSurf.get_rect(), 2)
         # Render surfaces
         match state:
             case State.MENU:
@@ -134,7 +139,7 @@ class Renderer:
         self.uiObjects["highscore"].render(highscore)
         # Blit individual surfaces onto main surf
         for name in self.uiObjects.keys():
-            self.uiSurf.blit(self.uiObjects[name].surf, self.uiObjects[name].pos)
+            self.uiSurf.blit(self.uiObjects[name].surface, self.uiObjects[name].pos.to_int())
 
     def _renderUi_WIN(self) -> None: ...
     

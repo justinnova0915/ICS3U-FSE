@@ -3,7 +3,7 @@ from collections.abc import Callable
 from functools import wraps
 
 from utils.tiles    import Tile
-from utils.vector   import Coord
+from utils.vector   import Vector
 from game           import board
 from constants      import *
 
@@ -28,8 +28,8 @@ class Animator:
     def _set_tiles(self, board: list[Tile]) -> None:
         ''' Set up tile list for animation '''
         for tile in board: 
-            tile.pos = Coord(self._gridToPixel(*tile.curr))
-            tile.size = Coord(CELL_SIZE)
+            tile.pos = Vector(self._gridToPixel(*tile.curr))
+            tile.size = Vector(CELL_SIZE)
             self.tiles.append(tile)
     
     def get_animatedTiles(self) -> list[Tile]:
@@ -64,17 +64,17 @@ class Animator:
             return self._animation_move
 
     def _animation_spawn(self, tile: Tile) -> None:
-        tile.size = Coord((0, 0)).lerp(
+        tile.size = Vector((0, 0)).lerp(
             (CELL_SIZE), 
             self._timeMap_spawn(self.progress)
         )
-        tile.pos = Coord(self._gridToPixel(*tile.curr)+(CELL_SIZE//2)).lerp(
+        tile.pos = Vector(self._gridToPixel(*tile.curr)+(CELL_SIZE//2)).lerp(
             self._gridToPixel(*tile.curr),
             self._timeMap_spawn(self.progress)
         )
 
     def _animation_move(self, tile: Tile) -> None:
-        tile.pos = Coord(self._gridToPixel(*tile.prev)).lerp(
+        tile.pos = Vector(self._gridToPixel(*tile.prev)).lerp(
             self._gridToPixel(*tile.curr),
             self._timeMap_move(self.progress)
         )
@@ -103,6 +103,7 @@ class Animator:
 
     def _gridToPixel(self, rowIndex: int, colIndex: int) -> Coord:
         ''' Convert board coordinates to pixel coordinates '''
-        x = CELL_PAD.w + (CELL_SIZE.w + CELL_PAD.w) * colIndex
-        y = CELL_PAD.h + (CELL_SIZE.h + CELL_PAD.h) * rowIndex
-        return Coord(x, y)
+        return Coord(
+            CELL_PAD.w + (CELL_SIZE.w + CELL_PAD.w) * colIndex,
+            CELL_PAD.h + (CELL_SIZE.h + CELL_PAD.h) * rowIndex
+        )

@@ -28,6 +28,12 @@ dt_accum = 0
 
 state    = State.GAME
 board    = Board()
+# board._set_boardValues([
+#     [0, 0, 0, 0],
+#     [0, 0, 1024, 0],
+#     [0, 1024, 0, 0],
+#     [0, 0, 0, 0],
+# ])
 animator = Animator(board.board)
 renderer = Renderer(screen, board.rows, board.cols, state)
 
@@ -70,6 +76,7 @@ while running:
             # Check to update highscore
             if board.score > highscore:
                 highscore = board.score
+                # Write to highscore.json
                 with open(pathJoin(ROOT_PATH, "data", "highscore.json"), 'w') as file:
                     json.dump({"highscore" : highscore}, file, indent=4)
             # Setup for animation
@@ -82,7 +89,8 @@ while running:
             if not board.hasLegalMove():
                 state = State.LOSE
 
-        if action == "newGame": # New game
+        # New game
+        if action == "new_game":
             reset()
 
     elif state == State.WIN:

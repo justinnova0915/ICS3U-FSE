@@ -1,4 +1,4 @@
-from   collections.abc import Iterable
+from   collections.abc import Callable
 
 import pygame
 
@@ -7,7 +7,7 @@ from   utils.namedpair  import Size
 from   utils.vector     import Vector
 
 
-def centerRect(
+def _centerRect(
         selfSize: tuple[int, int],
         otherRect: pygame.Rect | tuple[int, int, int, int]
     ) -> pygame.Rect:
@@ -18,55 +18,75 @@ def centerRect(
 
 
 class UIObject:
-    def __init__(self, size: tuple[int, int] | Size, pos: tuple[int, int] | Coord) -> None:
-        self.surf : pygame.Surface
-        self.size : Size
-        self.pos  : Coord
-        self.transform(size, pos)
+    def __init__(self,
+            size: Size,
+            pos:  Vector | tuple[Vector, Vector]
+            ) -> None:
+        
+        self.surface = pygame.Surface(size, pygame.SRCALPHA)
 
-    def transform(self, size: tuple[int, int] | Size, pos: tuple[int, int] | Coord | None = None) -> None:
-        self.surf = pygame.Surface(size, pygame.SRCALPHA)
-        self.size = Size(*size)
-        if pos is not None: self.pos = Coord(*pos)
+        self.size = Size(size)
+        self.animation_sPos = Vector(pos) if type(pos) == Vector else Vector(pos[0])
+        self.animation_ePos = Vector(pos) if type(pos) == Vector else Vector(pos[1])
+        self.pos            = self.animation_sPos
 
     def render(self) -> None:
         ...
 
-class UIScore(UIObject):
-    def __init__(self, size: tuple[int, int] | Size, pos: tuple[int, int] | Coord, title: str, border: bool = False) -> None:
+class UIRect(UIObject):
+    def __init__(self,
+            size: Size,
+            pos:  Vector | tuple[Vector, Vector],
+            colour:       tuple[int, int, int],
+            borderRad:    int,
+            borderWidth:  int                  = 0,
+            borderColour: tuple[int, int, int] = (0, 0, 0)
+            ) -> None:
+        
         super().__init__(size, pos)
-        self.title = title
 
-        self.width     = 2 if border else 0
-        self.borderRad = 15
+        self.colour       = colour
+        self.borderRad    = borderRad
+        self.borderWidth  = borderWidth
+        self.borderColour = borderColour
+
+    def render(self) -> None:
+        # Rectangle
+        pygame.draw.rect(self.surface, self.colour, (0, 0, *self.size.to_int()), border_radius=self.borderRad)
+        # Border
+        if self.borderWidth != 0:
+            pygame.draw.rect(self.surface, self.borderColour, (0, 0, *self.size.to_int()), width=self.borderWidth, border_radius=self.borderRad)
+
+class UIScore(UIRect):
+    def __init__(self,
+            size:   Size,
+            pos:    Vector | tuple[Vector, Vector],
+            text:   str,
+            border: bool = False
+            ) -> None:
+        
+        if border:
+            super().__init__(size, pos, SCORE_BGCOLOUR, borderRad=15, borderWidth=2, borderColour=SCORE_OUTCOLOUR)
+        else:
+            super().__init__(size, pos, SCORE_OUTCOLOUR, borderRad=15)
+
+        self.title = text
 
         self.titleFont = pygame.font.Font(FONT_FILENAME, 15)
         self.scoreFont = pygame.font.Font(FONT_FILENAME, 30)
 
     def render(self, score: int) -> None:
+        
+        super().render()
+        # print(f"Rendered score's background")
+
         # Cache text surfaces
         title_surf = self.titleFont.render(self.title, True, SCORE_COLOUR_TITLE)
         score_surf = self.scoreFont.render(str(score), True, SCORE_COLOUR_SCORE)
-
-        # Background
-        pygame.draw.rect(
-            self.surf,
-            SCORE_BGCOLOUR,
-            (0, 0, *self.size),
-            border_radius=self.borderRad
-        )
-        # Outline
-        pygame.draw.rect(
-            self.surf,
-            SCORE_OUTCOLOUR,
-            (0, 0, *self.size),
-            border_radius=self.borderRad,
-            width=self.width
-        )
         # Title
-        self.surf.blit(
+        self.surface.blit(
             title_surf,
-            centerRect(
+            _centerRect(
                 title_surf.get_size(),
                 (
                     0,
@@ -77,9 +97,9 @@ class UIScore(UIObject):
             )
         )
         # Score
-        self.surf.blit(
+        self.surface.blit(
             score_surf,
-            centerRect(
+            _centerRect(
                 score_surf.get_size(),
                 (
                     0,
@@ -90,12 +110,51 @@ class UIScore(UIObject):
             )
         )
 
-class AnimatedUIObject():
-    def __init__(self, size: Size | tuple[int, int], sPos: Vector | tuple[int, int], ePos: Vector | tuple[int, int]) -> None:
-        self.surf = pygame.Surface(size, pygame.SRCALPHA)
-        self.sPos = Vector(sPos)
-        self.ePos = Vector(ePos)
-        self.pos : Vector
+class UIText(UIObject):
+    def __init__(self,
+            size:   Size,
+            pos:    Vector | tuple[Vector, Vector],
+            text:   str,
+            font:   pygame.font.Font,
+            colour: tuple[int, int, int] = (0, 0, 0)
+            ) -> None:
+        
+        super().__init__(size, pos)
+
+        # Cached font surface
+        self.fontSurface = font.render(text, True, colour)
+
+    def render(self) -> None:
+        self.surface.blit(self.fontSurface, self.pos.to_int())
+
+# class UITextbox(UIRect, UIText):
+#     def __init__(self,
+#             size:   Size,
+#             pos:    Vector | tuple[Vector, Vector],
+#             text:   str,
+#             font:   pygame.font.Font,
+#             textColour: tuple[int, int, int] = (0, 0, 0),
+#             colour:       tuple[int, int, int],
+#             borderRad:    int,
+#             borderWidth:  int                  = 0,
+#             borderColour: tuple[int, int, int] = (0, 0, 0)
+#             ) -> None:
+        
+#         super()
+
+class UIbutton(UIRect):
+    def __init__(self,
+            size: Size,
+            pos:  Vector | tuple[Vector, Vector],
+            onClick: Callable,
+            text:         str,
+            colour:       tuple[int, int, int],
+            borderColour: tuple[int, int, int]
+            ) -> None:
+        
+        super().__init__(size, pos, colour, borderRad=15, borderWidth=2, borderColour=borderColour)
+
+        self.onClick = onClick
 
     def render(self) -> None:
         ...

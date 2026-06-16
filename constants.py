@@ -14,7 +14,8 @@ SCREEN_SIZE  = Size(900, 1000)
 
 ########## ============= UI ============= ##########
 
-FONTSIZE_DEFAULT = 36
+FONT_FILENAME = pathJoin(ROOT_PATH, "assets", "clearSans.ttf")
+FONTSIZE      = 36
 
 BACKGROUND_COLOUR = (250, 248, 239)
 
@@ -87,5 +88,3 @@ ANIMATION_DURATION = 0.20
 WIN_TILE = 2048
 
 MOVE_ACTIONS = ["left", "right", "up", "down"]
-
-FONT_FILENAME = pathJoin(ROOT_PATH, "assets", "clearSans.ttf")
