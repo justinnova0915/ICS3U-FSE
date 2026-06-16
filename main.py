@@ -44,6 +44,14 @@ def restart():
     renderer.reset(screen, board.rows, board.cols, state)
     state = State.GAME
 
+def goToMenu():
+    global state
+    board.reset()
+    animator.startAnimation(board.board)
+    board.cleanup()
+    renderer.reset(screen, board.rows, board.cols, state)
+    state = State.MENU
+
 running = True
 while running:
 
@@ -100,7 +108,7 @@ while running:
     ########## ========== DRAW ========== ##########
     screen.fill(BACKGROUND_COLOUR)
     animator.update(dt)
-    renderer.draw(state, board, animator.get_animatedTiles(), restart, events)
+    renderer.draw(state, board, animator.get_animatedTiles(), restart, goToMenu, events)
 
     pygame.display.set_caption(f"{clock.get_fps():.0f}")
 
