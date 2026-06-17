@@ -51,86 +51,100 @@ with open(pathJoin(ROOT_PATH, "data", "highscore.json")) as file:
     highscore = json.load(file)["highscore"]
 
 
-textbox = ui.UIText(
-    Size(125, 60),
-    Vector(100, 100),
-    "Lorem Ipsum",
-    pygame.font.Font(FONT_FILENAME, 16),
-    SCORE_TITLECOLOUR,
-    'c',
+textbox = ui.UIbutton(
+    size        = Size(125, 60),
+    pos         = Vector(0, 0),
+    onClick     =lambda: print(f"Button pressed"),
+    iconSurface = ui.UITextbox(
+        size         = Size(125, 60),
+        pos          = Vector(0, 0),
+        text         = "Hello World",
+        font         = pygame.font.Font(FONT_FILENAME, 20),   
+        colour       = (0, 0, 0),
+        align        = 'c',
+        bgColour     = (200, 200, 200),
+        borderRad    = 10,
+        borderWidth  = 2,
+        borderColour = (0, 0, 0)
+    ).surface
 )
 
 
 ########## ========= GAME LOOP ========== ##########
 running = True
 while running:
-
+    
     ########## ========== TIME ========== ##########
     dt = min(clock.tick(MAX_FPS) / 1000, DT_MAX)
 
     ########## ========= EVENTS ========= ##########
-    events = pygame.event.get()
+    gameEvents = pygame.event.get()
 
     # Pygame Events
-    for event in events:
+    for event in gameEvents:
         if event.type == pygame.QUIT:
             running = False
     
     # Input handling
-    action = Input.get_action(events)
+    inputState = Input.get_inputState(gameEvents)
+
+    match state:
+    ########## ========== MENU ========== ##########
+        case State.MENU:
+            ########## ===== UPDATE ===== ##########
+            ...
     
-    ########## ========= UPDATE ========= ##########
-    if state == State.GAME:
-        if action in MOVE_ACTIONS: # Movement
-            # Move board and spawn tile
-            board.move(action)
-            if board.moved:
-                board.spawn_tile()
-            # Check to update highscore
-            if board.score > highscore:
-                highscore = board.score
-                # Write to highscore.json
-                with open(pathJoin(ROOT_PATH, "data", "highscore.json"), 'w') as file:
-                    json.dump({"highscore" : highscore}, file, indent=4)
-            # Setup for animation
-            animator.startAnimation(board.board)
-            # Remove extra 'merging' tiles
-            board.cleanup()
-            # Win | Lose gamestate
-            if board.hasWon():
-                state = State.WIN
-            if not board.hasLegalMove():
-                state = State.LOSE
+    ########## ========== GAME ========== ##########
+        case State.GAME:
+            ########## ===== UPDATE ===== ##########
+            if inputState.gameAction == Input.GameActions.NEWGAME:
+                reset()
 
-        # New game
-        if action == "new_game":
-            reset()
+            if inputState.gameAction in MOVE_ACTIONS: # Movement
+                # Move board and spawn tile
+                board.move(inputState.gameAction)
+                if board.moved:
+                    board.spawn_tile()
+                # Check to update highscore
+                if board.score > highscore:
+                    highscore = board.score
+                    # Write to highscore.json
+                    with open(pathJoin(ROOT_PATH, "data", "highscore.json"), 'w') as file:
+                        json.dump({"highscore" : highscore}, file, indent=4)
+                # Setup for animation
+                animator.startAnimation(board.board)
+                # Remove extra 'merging' tiles
+                board.cleanup()
+                # Win | Lose gamestate
+                if board.hasWon():
+                    state = State.WIN
+                if not board.hasLegalMove():
+                    state = State.LOSE
 
-    elif state == State.WIN:
-        if action == "new_game":
-            board.reset()
-            renderer.reset(screen, board.rows, board.cols, state)
-            state = State.GAME
+    ########## ========== WIN =========== ##########
+        case State.WIN:
+            ########## ===== UPDATE ===== ##########
+            if inputState.gameAction == Input.GameActions.NEWGAME:
+                reset()
+                state = State.GAME
 
-    elif state == State.LOSE:
-        if action == "new_game":
-            board.reset()
-            renderer.reset(screen, board.rows, board.cols, state)
-            state = State.GAME
-
-    elif state == State.MENU:
-        if action == "new_game":
-            board.reset()
-            state = State.GAME
+    ########## ========== LOSE ========== ##########
+        case State.LOSE:
+            ########## ===== UPDATE ===== ##########
+            if inputState.gameAction == Input.GameActions.NEWGAME:
+                reset()
+                renderer.reset(screen, board.rows, board.cols, state)
+                state = State.GAME
     
     ########## ========== DRAW ========== ##########
-    screen.fill(BACKGROUND_COLOUR)
+    screen.fill(BG_COLOUR)
     animator.update(dt)
     renderer.render(state, board, animator.get_animatedTiles(), highscore, reset)
 
-    pygame.display.set_caption(f"{clock.get_fps():.0f}")
+    textbox.render(dest=screen)
 
     ########## ======== DISPLAY ========= ##########
     pygame.display.flip()
+    pygame.display.set_caption(f"{clock.get_fps():.0f}")
 
 pygame.quit()

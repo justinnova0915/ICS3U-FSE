@@ -22,11 +22,13 @@ class Renderer:
         self.state     = state
 
         self.uiObjects : dict[str, UIScore] = {
-            "score"     : UIScore(Size(125, 60), Vector(150, 155), "SCORE", SCORE_TITLECOLOUR, SCORE_SCORECOLOUR, SCORE_BGCOLOUR),
-            "highscore" : UIScore(Size(125, 60), Vector(300, 155), "BEST",  SCORE_TITLECOLOUR, SCORE_SCORECOLOUR, SCORE_BGCOLOUR, 2, SCORE_OUTCOLOUR),
+            "score"     : UIScore(Size(125, 60), Vector(150, 155), lambda: board.board, "SCORE", SCORE_TITLECOLOUR, SCORE_SCORECOLOUR, SCORE_BGCOLOUR),
+            "highscore" : UIScore(Size(125, 60), Vector(300, 155), lambda: highscore, "BEST",  SCORE_TITLECOLOUR, SCORE_SCORECOLOUR, TRANSPARENT_COLOUR, 4, SCORE_OUTCOLOUR),
         }
 
+
         self.win_anim_t = 0.0
+
 
         self.gameOverFont = pygame.font.Font(FONT_FILENAME, 100)
         self.scoreFont = pygame.font.Font(FONT_FILENAME, 20)
@@ -60,7 +62,7 @@ class Renderer:
     def render(self, state: State, board: Board, tiles: list[Tile], highscore: int, on_click) -> None:
         ''' Blits all surfaces onto the screen '''
         # Clear background
-        self.screen.fill(BACKGROUND_COLOUR)
+        self.screen.fill(BG_COLOUR)
         self.boardSurf.fill((0, 0, 0, 0))
         self.uiSurf   .fill((0, 0, 0, 0))
         # DEBUG
@@ -167,7 +169,7 @@ class Renderer:
         restart_target_y = 280
 
         self.restartSurf = pygame.Surface((restartButton_x, restartButton_y), pygame.SRCALPHA)
-        pygame.draw.rect(self.restartSurf, BACKGROUND_COLOUR, (0, 0, restartButton_x, restartButton_y), border_radius=15)
+        pygame.draw.rect(self.restartSurf, BG_COLOUR, (0, 0, restartButton_x, restartButton_y), border_radius=15)
         pygame.draw.rect(self.restartSurf, SCORE_BGCOLOUR, (0, 0, restartButton_x, restartButton_y), border_radius=15, width=5)
         self.restartSurf.blit(restartText, (65, 5))
 

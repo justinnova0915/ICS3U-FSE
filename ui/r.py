@@ -35,7 +35,7 @@ class RendererManager:
     def render(self, state: State, *args: Any) -> None:
         ''' Blits all rendered surfaces onto the screen '''
         # Clear background
-        self.screen.fill(BACKGROUND_COLOUR)
+        self.screen.fill(BG_COLOUR)
         # Render surfaces
         match state:
             case State.MENU:
@@ -59,7 +59,7 @@ class Renderer:
     def render(self) -> None:
         ''' Renders all surfaces onto the screen '''
         # Clear background
-        self.screen.fill(BACKGROUND_COLOUR)
+        self.screen.fill(BG_COLOUR)
         ...
 
 
@@ -260,7 +260,7 @@ class WinRenderer(Renderer):
         restartText = self.restartTextFont.render("Play Again", True, (156, 137, 121))
 
         self.restartSurf = pygame.Surface((self.restartButton_x, self.restartButton_y), pygame.SRCALPHA)
-        pygame.draw.rect(self.restartSurf, BACKGROUND_COLOUR, (0, 0, self.restartButton_x, self.restartButton_y), border_radius=15)
+        pygame.draw.rect(self.restartSurf, BG_COLOUR, (0, 0, self.restartButton_x, self.restartButton_y), border_radius=15)
         pygame.draw.rect(self.restartSurf, SCORE_BGCOLOUR, (0, 0, self.restartButton_x, self.restartButton_y), border_radius=15, width=5)
         self.restartSurf.blit(restartText, (65, 5))
 
@@ -320,7 +320,7 @@ class LoseRenderer(Renderer):
         restartText = self.restartTextFont.render("Play Again", True, (156, 137, 121))
 
         self.restartSurf = pygame.Surface((self.restartButton_x, self.restartButton_y), pygame.SRCALPHA)
-        pygame.draw.rect(self.restartSurf, BACKGROUND_COLOUR, (0, 0, self.restartButton_x, self.restartButton_y), border_radius=15)
+        pygame.draw.rect(self.restartSurf, BG_COLOUR, (0, 0, self.restartButton_x, self.restartButton_y), border_radius=15)
         pygame.draw.rect(self.restartSurf, SCORE_BGCOLOUR, (0, 0, self.restartButton_x, self.restartButton_y), border_radius=15, width=5)
         self.restartSurf.blit(restartText, (65, 5))
 
