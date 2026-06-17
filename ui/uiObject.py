@@ -225,7 +225,7 @@ class UIScore(UIRect, UIText):
         self.titleObj.render(self.surface)
         self.scoreObj.render(self.surface)
 
-class UIbutton(UIObject):
+class UIButton(UIObject):
     @UIObject._wrapper_init
     def __init__(self,
             size:        Size,
@@ -245,8 +245,8 @@ class UIbutton(UIObject):
 
         self.hoverOverlay = pygame.Surface(self.size, pygame.SRCALPHA)
         self.clickOverlay = pygame.Surface(self.size, pygame.SRCALPHA)
-        self.hoverOverlay.fill((255, 255, 255, 50))
-        self.clickOverlay.fill((150, 150, 150, 255))
+        self.hoverOverlay.fill((255, 255, 255, 200))
+        self.clickOverlay.fill((225, 225, 225, 255))
 
     @UIObject._wrapper_render
     def render(self, dest: pygame.Surface | None = None) -> None:
@@ -260,33 +260,44 @@ class UIbutton(UIObject):
 
 
 class UIManager:
-    def __init__(self) -> None:
+    def __init__(self, objs: list[UIObject] = []) -> None:
         self.staticObjs:  list[UIObject] = []
-        self.dynamicObjs: list[UIbutton] = []
+        self.dynamicObjs: list[UIButton] = []
+        # Add initialized objects
+        for obj in objs:
+            self.addUIObject(obj)
 
     def addUIObject(self, obj: UIObject) -> None:
-        if isinstance(obj, (UIbutton)):
+        if isinstance(obj, (UIButton)):
             self.dynamicObjs.append(obj)
         else:
             self.staticObjs.append(obj)
 
     def update(self, inputState: InputState) -> None:
         for obj in self.dynamicObjs:
-            if isinstance(obj, UIbutton):
+            if isinstance(obj, UIButton):
                 self._update_button(obj, inputState)
 
-    def _update_button(self, button: UIbutton, inputState: InputState) -> None:
+    def _update_button(self, button: UIButton, inputState: InputState) -> None:
         # Mouse on top of button
         if self._coerce_rect_UIObject(button).collidepoint(inputState.mousePos.to_tuple()):
             button.hover = True
+            # Update cursor
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
             # Mouse clicked
             if inputState.mouseButtons_up["left"] and not button.clicked:
                 button.clicked = True
                 button.onClick()
+                # Update cursor
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+            # Mouse not clicked
+            else:
+                button.clicked = False
         # Mouse not on top of button
         else:
             button.hover = False
-            button.clicked = False
+            # Update cursor
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
     def _coerce_rect_UIObject(self, obj: UIObject) -> pygame.Rect:
         return pygame.Rect(obj.pos.to_tuple(), obj.surface.get_size())

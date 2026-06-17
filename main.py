@@ -1,5 +1,5 @@
 # Introduction to Computer Science (ICS3U)
-# FSE May - July 2026
+# FSE May - June 2026
 
 ########## ========== IMPORTS =========== ##########
 import  json
@@ -25,9 +25,7 @@ pygame.display.set_caption("2048")
 
 clock = pygame.time.Clock()
 MAX_FPS  = 60
-DT_STEP  = 1 / MAX_FPS
 DT_MAX   = 0.5
-dt_accum = 0
 
 state    = State.GAME
 board    = Board()
@@ -51,7 +49,7 @@ with open(pathJoin(ROOT_PATH, "data", "highscore.json")) as file:
     highscore = json.load(file)["highscore"]
 
 
-textbox = ui.UIbutton(
+textbox = ui.UIButton(
     size        = Size(125, 60),
     pos         = Vector(0, 0),
     onClick     =lambda: print(f"Button pressed"),

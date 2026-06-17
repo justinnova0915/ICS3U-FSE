@@ -31,18 +31,30 @@ class InputState:
     keysPressed:       pygame.key.ScancodeWrapper
     mousePos:          Vector
     mouseButtons:      dict[str, bool]
-    mouseButtons_up:   dict[str, bool]
     mouseButtons_down: dict[str, bool]
+    mouseButtons_up:   dict[str, bool]
 
 def get_inputState(events: list) -> InputState:
-    gameAction          = _get_action(events)
-    keysPressed         = pygame.key.get_pressed()
-    mousePos            = Vector(pygame.mouse.get_pos())
-    mouseButtons        = _coerce_dict_mouseButtons(pygame.mouse.get_pressed())
-    mouseButtons_up     = _coerce_dict_mouseButtons(pygame.mouse.get_just_released())
-    mouseButtons_down   = _coerce_dict_mouseButtons(pygame.mouse.get_just_pressed())
-
-    return InputState(gameAction, keysPressed, mousePos, mouseButtons, mouseButtons_up, mouseButtons_down)
+    # Game-specific input
+    gameAction  = _get_action(events)
+    # Keys
+    keysPressed = pygame.key.get_pressed()
+    # Mouse
+    mousePos      = Vector(pygame.mouse.get_pos())
+    mouseButtons  = _coerce_dict_mouseButtons(pygame.mouse.get_pressed())
+        # Extract just_pressed and just_released from the event queue
+    mouseButtons_down, mouseButtons_up = _get_mouseButtonState(events)
+    mouseButtons_down = _coerce_dict_mouseButtons(mouseButtons_down)
+    mouseButtons_up   = _coerce_dict_mouseButtons(mouseButtons_up)
+    
+    return InputState(
+        gameAction, 
+        keysPressed, 
+        mousePos, 
+        mouseButtons, 
+        mouseButtons_down,
+        mouseButtons_up, 
+    )
 
 def _get_action(events: list) -> str | None:
     for event in events:
@@ -51,9 +63,25 @@ def _get_action(events: list) -> str | None:
                 return KEY_INPUTS[event.key]
     return None
 
-def _coerce_dict_mouseButtons(mouseButtons: tuple[bool, bool, bool] | tuple[bool, bool, bool, bool, bool]) -> dict[str, bool]:
+def _get_mouseButtonState(events: list) -> tuple[tuple[bool, bool, bool], tuple[bool, bool, bool]]:
+    ''' Returns mouse button down & up '''
+    down_buttons = [False, False, False]
+    up_buttons   = [False, False, False]
+    
+    for event in events:
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            # -1 since mouse events use 1-indexed buttons (1=Left, 2=Middle, 3=Right)
+            if 1 <= event.button <= 3:
+                down_buttons[event.button - 1] = True
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if 1 <= event.button <= 3:
+                up_buttons[event.button - 1] = True
+                
+    return tuple(down_buttons), tuple(up_buttons)
+
+def _coerce_dict_mouseButtons(mouseButtons: tuple[bool, bool, bool] | list[bool]) -> dict[str, bool]:
     return {
-        "left":        mouseButtons[0],
-        "middle":      mouseButtons[1],
-        "right":       mouseButtons[2]
+        "left":   mouseButtons[0],
+        "middle": mouseButtons[1],
+        "right":  mouseButtons[2]
     }

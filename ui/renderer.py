@@ -1,3 +1,5 @@
+########## ========== IMPORTS =========== ##########
+
 import  pygame
 
 from    constants       import *
@@ -22,8 +24,8 @@ class Renderer:
         self.state     = state
 
         self.uiObjects : dict[str, UIScore] = {
-            "score"     : UIScore(Size(125, 60), Vector(150, 155), lambda: board.board, "SCORE", SCORE_TITLECOLOUR, SCORE_SCORECOLOUR, SCORE_BGCOLOUR),
-            "highscore" : UIScore(Size(125, 60), Vector(300, 155), lambda: highscore, "BEST",  SCORE_TITLECOLOUR, SCORE_SCORECOLOUR, TRANSPARENT_COLOUR, 4, SCORE_OUTCOLOUR),
+            "score"     : UIScore(Size(125, 60), Vector(150, 155), lambda: 10, "SCORE", SCORE_TITLECOLOUR, SCORE_SCORECOLOUR, SCORE_BGCOLOUR),
+            "highscore" : UIScore(Size(125, 60), Vector(300, 155), lambda: 10, "BEST",  SCORE_TITLECOLOUR, SCORE_SCORECOLOUR, TRANSPARENT_COLOUR, 4, SCORE_OUTCOLOUR),
         }
 
 
@@ -137,8 +139,8 @@ class Renderer:
     def _renderUi_GAME(self, currScore: int, highscore: int) -> None:
         ''' Renders the ui for 'GAME' state '''
         # Render individual surfaces
-        self.uiObjects["score"].render(score=currScore)
-        self.uiObjects["highscore"].render(score=highscore)
+        self.uiObjects["score"].render()
+        self.uiObjects["highscore"].render()
         # Blit individual surfaces onto main surf
         for name in self.uiObjects.keys():
             self.uiSurf.blit(self.uiObjects[name].surface, self.uiObjects[name].pos.to_int())
