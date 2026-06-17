@@ -70,7 +70,7 @@ class Renderer:
 
     ########## ============ DRAW ============ ##########
 
-    def draw(self, state: State, board: Board, tiles: list[Tile], on_click, events: list[pygame.Event]) -> None:
+    def draw(self, state: State, board: Board, tiles: list[Tile], restart_on_click, menu_on_click, events: list[pygame.Event]) -> None:
         ''' Blits all surfaces onto the screen '''
         if state != State.GAME:
             if self.win_anim_t < 1.0:
@@ -89,7 +89,7 @@ class Renderer:
         self._render_board(board, tiles)
         self.screen.blit(self.boardSurf, self._get_board_pos())
         # UI surfaces
-        self._render_ui(board.score, board.moves, state, on_click, events)
+        self._render_ui(board.score, board.moves, state, restart_on_click, menu_on_click, events)
         self.screen.blit(self.uiSurf, self._get_ui_pos())            
     
 
@@ -157,13 +157,13 @@ class Renderer:
             textRect.center = rect.center
             self.boardSurf.blit(textSurf, textRect)
 
-    def _render_ui(self, score: int, moves: int, state: State, on_click, events) -> None:
+    def _render_ui(self, score: int, moves: int, state: State, restart_on_click, menu_on_click, events) -> None:
         if state == State.MENU:
-            self._render_menu(on_click)
+            self._render_menu(restart_on_click)
         elif state == State.WIN or state == State.LOSE:
-            self._render_win(score, moves, on_click, events)
+            self._render_win(score, moves, restart_on_click, menu_on_click, events)
         elif state == State.GAME:
-            ''' Renders all ui-related surfaces'''
+            ''' Renders all ui-related surfaces''' 
             # Render individual surfaces
             self.uiObjects["score"].render(score)
             self.uiObjects["highscore"].render(HIGHSCORE)
@@ -171,13 +171,14 @@ class Renderer:
             for name in self.uiObjects.keys():
                 self.uiSurf.blit(self.uiObjects[name].surf, self.uiObjects[name].pos)
     
-    def _render_win(self, score: int, moves: int, on_click, events: list[pygame.Event]) -> None:
+    def _render_win(self, score: int, moves: int, restart_on_click, menu_on_click, events: list[pygame.Event]) -> None:
         gameOverText = self.gameOverFont.render("Game Over", True, (156, 137, 121))
         scoreText = self.scoreFont.render(f"{score} points scored in {moves} moves.", True, (156, 137, 121))
         restartText = self.restartTextFont.render("Play Again", True, (156, 137, 121))
+        menuText = self.restartTextFont.render("Menu", True, BACKGROUND_COLOUR)
 
-        restartButton_x = 250
-        restartButton_y = 50
+        button_x = 250
+        button_y = 50
 
         gameOver_y = -50
         gameOver_Target_y = 50
@@ -188,22 +189,36 @@ class Renderer:
         restart_start_y = -50
         restart_target_y = 280
 
-        self.restartSurf = pygame.Surface((restartButton_x, restartButton_y), pygame.SRCALPHA)
-        pygame.draw.rect(self.restartSurf, BACKGROUND_COLOUR, (0, 0, restartButton_x, restartButton_y), border_radius=15)
-        pygame.draw.rect(self.restartSurf, SCORE_BGCOLOUR, (0, 0, restartButton_x, restartButton_y), border_radius=15, width=5)
+        menu_start_y = -50
+        menu_target_y = 220
+
+        self.restartSurf = pygame.Surface((button_x, button_y), pygame.SRCALPHA)
+        pygame.draw.rect(self.restartSurf, BACKGROUND_COLOUR, (0, 0, button_x, button_y), border_radius=15)
+        pygame.draw.rect(self.restartSurf, SCORE_BGCOLOUR, (0, 0, button_x, button_y), border_radius=15, width=5)
         self.restartSurf.blit(restartText, (65, 5))
+        
+        menuButtonSurf = pygame.Surface((button_x, button_y), pygame.SRCALPHA)
+        pygame.draw.rect(menuButtonSurf, SCORE_COLOUR_SCORE, (0, 0, button_x, button_y), border_radius=15)
+        menuTextRect = menuText.get_rect()
+        menuTextRect.center = (button_x/2, button_y/2)
+        menuButtonSurf.blit(menuText, menuTextRect)
+
 
         mouse_pos = pygame.mouse.get_pos()
         mouse_clicked = pygame.mouse.get_pressed()[0]
-        is_hovered = pygame.Rect(SCREEN_SIZE.w/2 - restartButton_x/2, restart_target_y - restartButton_y/2, restartButton_x, restartButton_y).collidepoint(mouse_pos)
+        restart_is_hovered = pygame.Rect(SCREEN_SIZE.w/2 - button_x/2, restart_target_y - button_y/2, button_x, button_y).collidepoint(mouse_pos)
+        menu_is_hovered = pygame.Rect(SCREEN_SIZE.w/2 - button_x/2, menu_target_y - button_y/2, button_x, button_y).collidepoint(mouse_pos)
 
-        if is_hovered and mouse_clicked:
-            on_click()
+        if restart_is_hovered and mouse_clicked:
+            restart_on_click()
+        elif menu_is_hovered and mouse_clicked:
+            menu_on_click()
         
 
         self.screen.blit(*animate(self.win_anim_t, gameOverText, (SCREEN_SIZE.w / 2, gameOver_y), (SCREEN_SIZE.w / 2, gameOver_Target_y)))
         self.screen.blit(*animate(self.win_anim_t, scoreText, (SCREEN_SIZE.w / 2, score_start_y), (SCREEN_SIZE.w / 2, score_target_y)))
         self.screen.blit(*animate(self.win_anim_t, self.restartSurf, (SCREEN_SIZE.w / 2, restart_start_y), (SCREEN_SIZE.w / 2, restart_target_y)))
+        self.screen.blit(*animate(self.win_anim_t, menuButtonSurf, (SCREEN_SIZE.w / 2, menu_start_y), (SCREEN_SIZE.w / 2, menu_target_y)))
         
         if not self.saved:
             self._render_dialog(events, score)
