@@ -12,7 +12,7 @@ from    utils.lerp      import animate
 
 class Renderer:
     ''' Class for rendering all surfaces onto the screen '''
-    def __init__(self, screen: pygame.Surface, rows: int, cols: int, state) -> None:
+    def __init__(self, screen: pygame.Surface, rows: int, cols: int, state, mouse_pos) -> None:
         self.screen    = screen
         self.uiSurf    = pygame.Surface((575, 250), pygame.SRCALPHA)
         self.boardSurf = pygame.Surface(self._get_board_size(rows, cols), pygame.SRCALPHA)
@@ -20,6 +20,7 @@ class Renderer:
         self.startSurf: pygame.Surface
         self.restartSurf: pygame.Surface
         self.state = state
+        self.mouse_pos = mouse_pos
 
         # for _render_dialog() 
         self.active = False
@@ -70,8 +71,9 @@ class Renderer:
 
     ########## ============ DRAW ============ ##########
 
-    def draw(self, state: State, board: Board, tiles: list[Tile], restart_on_click, menu_on_click, events: list[pygame.Event]) -> None:
+    def draw(self, state: State, board: Board, tiles: list[Tile], restart_on_click, menu_on_click, events: list[pygame.Event], mouse_pos) -> None:
         ''' Blits all surfaces onto the screen '''
+        self.mouse_pos = mouse_pos
         if state != State.GAME:
             if self.win_anim_t < 1.0:
                 self.win_anim_t += 0.04
@@ -204,10 +206,33 @@ class Renderer:
         menuButtonSurf.blit(menuText, menuTextRect)
 
 
-        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = self.mouse_pos
         mouse_clicked = pygame.mouse.get_pressed()[0]
         restart_is_hovered = pygame.Rect(SCREEN_SIZE.w/2 - button_x/2, restart_target_y - button_y/2, button_x, button_y).collidepoint(mouse_pos)
         menu_is_hovered = pygame.Rect(SCREEN_SIZE.w/2 - button_x/2, menu_target_y - button_y/2, button_x, button_y).collidepoint(mouse_pos)
+
+        if restart_is_hovered:
+            tint = pygame.Surface((button_x, button_y), pygame.SRCALPHA)
+            
+            pygame.draw.rect(
+                tint, 
+                (230, 230, 230, 255), 
+                (0, 0, button_x, button_y), 
+                border_radius=15
+            )
+            
+            self.restartSurf.blit(tint, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+        elif menu_is_hovered:
+            tint = pygame.Surface((button_x, button_y), pygame.SRCALPHA)
+            
+            pygame.draw.rect(
+                tint, 
+                (230, 230, 230, 255), 
+                (0, 0, button_x, button_y), 
+                border_radius=15
+            )
+            
+            menuButtonSurf.blit(tint, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
 
         if restart_is_hovered and mouse_clicked:
             restart_on_click()
@@ -249,7 +274,7 @@ class Renderer:
         startTextRect.center = (startButton_x/2, startButton_y/2)
         self.startSurf.blit(startText, startTextRect)
 
-        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = self.mouse_pos
         mouse_clicked = pygame.mouse.get_pressed()[0]
         is_hovered = pygame.Rect(SCREEN_SIZE.w/2 - startButton_x/2 - left_col, start_target_y - startButton_y/2, startButton_x, startButton_y).collidepoint(mouse_pos)
 
@@ -327,7 +352,7 @@ class Renderer:
         self.dialogSurf.blit(title, titleRect)
         self.dialogSurf.blit(submitText, submitTextRect)
 
-        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = self.mouse_pos
         mouse_clicked = pygame.mouse.get_pressed()[0]
         is_hovered = pygame.Rect(SCREEN_SIZE.w/2 - submitButton_x/2, dialog_target_y-dialog_y/2+submit_target_y, submitButton_x, submitButton_y).collidepoint(mouse_pos)
 

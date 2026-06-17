@@ -26,7 +26,6 @@ screen = pygame.Surface(SCREEN_SIZE)
 pygame.display.set_caption("2048")
 bgImage = pygame.image.load("./assets/twitterImage-removebg-preview.png").convert_alpha()
 
-
 state = State.MENU
 clock = pygame.time.Clock()
 MAX_FPS  = 60
@@ -58,25 +57,38 @@ def calculate_scale_rect(win_w, win_h, target_aspect):
 
 def get_logical_mouse_pos(actual_pos, scale_rect, virtual_w, virtual_h):
     """Translates real window mouse coordinates back to virtual screen coordinates."""
+    # Subtract layout margins accurately
     mx = actual_pos[0] - scale_rect.x
     my = actual_pos[1] - scale_rect.y
     
-    # Avoid division by zero if window is minimized or collapsed
-    if scale_rect.w == 0 or scale_rect.h == 0:
+    # Avoid division by zero if window is collapsed or minimized
+    if scale_rect.w <= 0 or scale_rect.h <= 0:
         return 0, 0
         
+    # Downscale real window inputs into the fixed virtual space
     virtual_x = int(mx * (virtual_w / scale_rect.w))
     virtual_y = int(my * (virtual_h / scale_rect.h))
+    
     return virtual_x, virtual_y
 
 # Initialize scale positioning tracking
 window_width, window_height = SCREEN_SIZE
 scale_rect = calculate_scale_rect(window_width, window_height, TARGET_ASPECT)
 
+# Cache Pygame's original mouse position function before we override it
+_original_get_pos = pygame.mouse.get_pos
+
+# Globally override pygame.mouse.get_pos so other modules get the corrected space
+def patched_get_pos():
+    raw_pos = _original_get_pos()
+    return get_logical_mouse_pos(raw_pos, scale_rect, VIRTUAL_WIDTH, VIRTUAL_HEIGHT)
+
+pygame.mouse.get_pos = patched_get_pos
+
 ########## ========== MODULES =========== ##########
 board    = Board()
 animator = Animator(board.board)
-renderer = Renderer(screen, board.rows, board.cols, state)
+renderer = Renderer(screen, board.rows, board.cols, state, patched_get_pos())
 
 ########## ========= GAME LOOP ========== ##########
 
@@ -137,7 +149,7 @@ while running:
             # Pass keyboard/system events straight through
             events.append(event)
     
-    # Input handling (Uses the new mapped events)
+    # Input handling (Uses the clean mapped events)
     action = Input.get_action(events)
     
     ########## ========= UPDATE ========= ##########
@@ -179,19 +191,37 @@ while running:
     ########## ========== DRAW ========== ##########
     screen.fill(BACKGROUND_COLOUR)
     animator.update(dt)
-    renderer.draw(state, board, animator.get_animatedTiles(), restart, goToMenu, events)
+    renderer.draw(state, board, animator.get_animatedTiles(), restart, goToMenu, events, patched_get_pos())
 
     pygame.display.set_caption(f"{clock.get_fps():.0f}")
 
     ########## ======== DISPLAY ========= ##########
-    # 1. Clear physical window backbuffer with black pillar bars
+    # 1. Clear physical window backbuffer
     realScreen.fill(BACKGROUND_COLOUR)
     
-    # 2. Scale your game surface up or down to fit the aspect-aware destination rectangle
-    scaled_surface = pygame.transform.smoothscale(screen, (scale_rect.w, scale_rect.h))
+    # 2. Calculate aspect-safe image size, capping maximum height to 500px cleanly
+    MAX_BG_HEIGHT = 500
+    real_win_width = realScreen.get_width()
+    real_win_height = realScreen.get_height()
     
-    # 3. Draw scaled game surface centered on the real hardware screen
+    scaled_bg_height = int(bgImage.get_height() * (real_win_width / bgImage.get_width()))
+    
+    if scaled_bg_height > MAX_BG_HEIGHT:
+        scaled_bg_height = MAX_BG_HEIGHT
+        scaled_bg_width = int(bgImage.get_width() * (MAX_BG_HEIGHT / bgImage.get_height()))
+    else:
+        scaled_bg_width = real_win_width
+
+    # 4. Scale and blit your actual game board layer LAST (on top of the background)
+    scaled_surface = pygame.transform.smoothscale(screen, (scale_rect.w, scale_rect.h))
     realScreen.blit(scaled_surface, (scale_rect.x, scale_rect.y))
+    
+
+    if state == State.MENU:
+        # 3. Blit the background FIRST so it sits safely under the interface layer
+        scaled_bg = pygame.transform.smoothscale(bgImage, (scaled_bg_width, scaled_bg_height))
+        bg_x = (real_win_width - scaled_bg_width) // 2
+        realScreen.blit(scaled_bg, (bg_x, real_win_height - scaled_bg_height))
     
     pygame.display.flip()
 
