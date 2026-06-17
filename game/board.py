@@ -242,3 +242,13 @@ class Board:
             # Left-align the text to keep the box borders perfectly aligned
             print(f"│ {row:<{rowLen}} │")
         print('└', '─' * (rowLen + 2), '┘', sep='')
+
+    
+    def _set_boardValues(self, values: list[list[int]]) -> None:
+        self.board = [
+            Tile((r, c), value=values[r][c])
+            
+            for r in range(len(values))
+                for c in range(len(values[r]))
+                    if values[r][c] != 0
+        ]

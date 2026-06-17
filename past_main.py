@@ -24,8 +24,6 @@ SCREEN_FLAGS = pygame.RESIZABLE
 realScreen = pygame.display.set_mode(SCREEN_SIZE, SCREEN_FLAGS)
 screen = pygame.Surface(SCREEN_SIZE)
 pygame.display.set_caption("2048")
-bgImage = pygame.image.load("./assets/twitterImage-removebg-preview.png").convert_alpha()
-
 
 state = State.MENU
 clock = pygame.time.Clock()
@@ -185,7 +183,7 @@ while running:
 
     ########## ======== DISPLAY ========= ##########
     # 1. Clear physical window backbuffer with black pillar bars
-    realScreen.fill(BACKGROUND_COLOUR)
+    realScreen.fill((0, 0, 0))
     
     # 2. Scale your game surface up or down to fit the aspect-aware destination rectangle
     scaled_surface = pygame.transform.smoothscale(screen, (scale_rect.w, scale_rect.h))

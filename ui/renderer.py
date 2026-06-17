@@ -41,7 +41,6 @@ class Renderer:
         self.restartTextFont = pygame.font.Font(FONT_FILENAME, 25)
         self.leaderboardFont = pygame.font.Font(FONT_FILENAME, 25)
         self.titleFont = pygame.font.Font(FONT_FILENAME, 30)
-        self.bgImage = pygame.image.load("./assets/twitterImage-removebg-preview.png").convert_alpha()
 
 
 
@@ -272,7 +271,6 @@ class Renderer:
         self.screen.blit(*animate(self.win_anim_t, titleText, (SCREEN_SIZE.w / 2 - left_col, title_y), (SCREEN_SIZE.w / 2 - left_col, title_Target_y)))
         self.screen.blit(*animate(self.win_anim_t, scoreText, (SCREEN_SIZE.w / 2 - left_col, score_start_y), (SCREEN_SIZE.w / 2 - left_col, score_target_y)))
         self.screen.blit(*animate(self.win_anim_t, self.startSurf, (SCREEN_SIZE.w / 2 - left_col, start_start_y), (SCREEN_SIZE.w / 2 - left_col, start_target_y)))
-        self.screen.blit(pygame.transform.smoothscale(self.bgImage, (self.screen.get_width(), int(self.bgImage.get_height() * (self.screen.get_width() / self.bgImage.get_width())))), (0, self.screen.get_height() - int(self.bgImage.get_height() * (self.screen.get_width() / self.bgImage.get_width()))))
         self._render_leaderboard()
 
     def _render_leaderboard(self):
@@ -335,7 +333,6 @@ class Renderer:
 
         if is_hovered:
             tint = pygame.Surface((submitButton_x, submitButton_y), pygame.SRCALPHA)
-            tint.fill(156, 137, 121, 255)
 
             pygame.draw.rect(
                 tint, 
@@ -397,7 +394,6 @@ class Renderer:
         if value not in self.fontSurfaces:
             self.fontSurfaces[value] = self.fontDefault.render(str(value), True, TILE_TEXT_COLOURS["default"])
         return self.fontSurfaces[value]
-    
     
     ########## ====== POSITION & SIZE ======= ##########
 
