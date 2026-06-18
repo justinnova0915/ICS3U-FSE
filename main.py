@@ -118,23 +118,19 @@ while running:
     raw_events = pygame.event.get()
     events = []
 
-    # Pygame Events & Mouse Coordinate Transformation
     for event in raw_events:
         if event.type == pygame.QUIT:
             running = False
             events.append(event)
             
         elif event.type == pygame.VIDEORESIZE:
-            # Update window bounds and recalculate aspect viewport
             window_width, window_height = event.w, event.h
             scale_rect = calculate_scale_rect(window_width, window_height, TARGET_ASPECT)
             events.append(event)
             
-        # Reconstruct mouse events with corrected virtual coordinates
         elif event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP, pygame.MOUSEMOTION):
             virtual_pos = get_logical_mouse_pos(event.pos, scale_rect, VIRTUAL_WIDTH, VIRTUAL_HEIGHT)
             
-            # Map attributes to dict to create a new mutated event clone
             event_dict = dict(event.__dict__)
             event_dict['pos'] = virtual_pos
             if 'rel' in event_dict and scale_rect.w > 0 and scale_rect.h > 0:
@@ -196,10 +192,8 @@ while running:
     pygame.display.set_caption(f"{clock.get_fps():.0f}")
 
     ########## ======== DISPLAY ========= ##########
-    # 1. Clear physical window backbuffer
     realScreen.fill(BACKGROUND_COLOUR)
     
-    # 2. Calculate aspect-safe image size, capping maximum height to 500px cleanly
     MAX_BG_HEIGHT = 500
     real_win_width = realScreen.get_width()
     real_win_height = realScreen.get_height()
@@ -212,13 +206,11 @@ while running:
     else:
         scaled_bg_width = real_win_width
 
-    # 4. Scale and blit your actual game board layer LAST (on top of the background)
     scaled_surface = pygame.transform.smoothscale(screen, (scale_rect.w, scale_rect.h))
     realScreen.blit(scaled_surface, (scale_rect.x, scale_rect.y))
     
 
     if state == State.MENU:
-        # 3. Blit the background FIRST so it sits safely under the interface layer
         scaled_bg = pygame.transform.smoothscale(bgImage, (scaled_bg_width, scaled_bg_height))
         bg_x = (real_win_width - scaled_bg_width) // 2
         realScreen.blit(scaled_bg, (bg_x, real_win_height - scaled_bg_height))

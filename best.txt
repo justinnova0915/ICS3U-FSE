@@ -1,5 +1,4 @@
-awow,2452
-idk,2300
-nigga,1340
-idkman,628
-Justin,1
+Justin,1232
+Test,944
+Albert,1
+Jerry,1

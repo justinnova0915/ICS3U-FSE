@@ -65,6 +65,9 @@ class Board:
         Checks for adjacent pairs of the same value in the row, then merges them  
         Note: this method merges leftwards
         '''
+
+        self.moves += 1
+        
         for tile in self.board:
             tile.merging = False
 
@@ -108,13 +111,11 @@ class Board:
                             ))
                             self.moved = True
                             self.score += tile.value*2
-                            self.moves += 1
                             break
                     # if is none, then its an empty spot. move into it
                     else:
                         tile.curr = (next_r, next_c)
                         self.moved = True
-                        self.moves += 1
 
                 else:
                     break
